@@ -1,0 +1,48 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  NORMAL
+  ADMIN
+}
+
+enum TicketStatus {
+  PENDIENTE
+  EN_PROCESO
+  RESUELTO
+  CANCELADO
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique @db.VarChar(50)
+  password  String   @db.VarChar(255)
+  role      Role     @default(NORMAL)
+  area      String   @db.VarChar(100)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tickets   Ticket[]
+}
+
+model Ticket {
+  id          Int          @id @default(autoincrement())
+  service     String       @db.VarChar(100)
+  area        String       @db.VarChar(100)
+  requester   String       @db.VarChar(100)
+  description String?      @db.Text
+  folio       String       @unique @db.VarChar(50)
+  status      TicketStatus @default(PENDIENTE)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  userId      Int
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([area])
+  @@index([status])
+}
