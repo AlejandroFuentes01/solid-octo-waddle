@@ -1,11 +1,13 @@
 "use client";
-import { Bell, Home, LogOut, UserPlus, Users } from "lucide-react";
+import { Bell, Home, LogOut, Menu, UserPlus, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 export default function HeaderAdmin() {
     const pathname = usePathname();
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const isActive = (path: string) => {
         return pathname === path;
@@ -44,8 +46,16 @@ export default function HeaderAdmin() {
                         />
                     </div>
 
-                    {/* Navigation */}
-                    <nav className="flex space-x-1">
+                    {/* Mobile Menu Button */}
+                    <button
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        className="lg:hidden p-2 rounded-md text-gray-400 hover:text-blue-600 hover:bg-gray-100"
+                    >
+                        <Menu className="h-6 w-6" />
+                    </button>
+
+                    {/* Desktop Navigation */}
+                    <nav className="hidden lg:flex space-x-1">
                         {navigationItems.map((item) => (
                             <Link
                                 key={item.path}
@@ -66,7 +76,7 @@ export default function HeaderAdmin() {
                     </nav>
 
                     {/* Right Section */}
-                    <div className="flex items-center space-x-4">
+                    <div className="hidden lg:flex items-center space-x-4">
                         {/* Notifications */}
                         <button className="relative p-2 text-gray-400 hover:text-blue-600 transition-colors duration-200">
                             <Bell className="h-6 w-6" />
@@ -84,6 +94,50 @@ export default function HeaderAdmin() {
                         </div>
                     </div>
                 </div>
+
+                {/* Mobile Menu */}
+                {isMenuOpen && (
+                    <div className="lg:hidden">
+                        <div className="px-2 pt-2 pb-3 space-y-1">
+                            {navigationItems.map((item) => (
+                                <Link
+                                    key={item.path}
+                                    href={item.path}
+                                    className={`flex items-center px-3 py-2 rounded-md text-base font-medium
+                                        ${isActive(item.path)
+                                            ? "text-blue-600 bg-blue-50"
+                                            : "text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+                                        }`}
+                                    onClick={() => setIsMenuOpen(false)}
+                                >
+                                    <item.icon
+                                        className={`mr-3 h-5 w-5
+                                            ${isActive(item.path) ? "text-blue-600" : "text-gray-400"}`}
+                                    />
+                                    {item.name}
+                                </Link>
+                            ))}
+                            
+                            <div className="border-t border-gray-200 pt-4 pb-3">
+                                <div className="flex items-center px-3">
+                                    <div className="flex-1">
+                                        <div className="text-base font-medium text-gray-800">Admin User</div>
+                                        <div className="text-sm text-gray-500">admin@comala.com</div>
+                                    </div>
+                                    <button className="p-2 text-gray-400 hover:text-blue-600">
+                                        <LogOut className="h-5 w-5" />
+                                    </button>
+                                </div>
+                                <div className="mt-3 px-2">
+                                    <button className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 w-full">
+                                        <Bell className="mr-3 h-5 w-5 text-gray-400" />
+                                        Notificaciones
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </header>
     );
