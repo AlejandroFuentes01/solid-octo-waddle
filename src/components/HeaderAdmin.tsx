@@ -18,118 +18,117 @@ export default function HeaderAdmin() {
     ];
 
     return (
-        <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-20">
-                    {/* Left Section: Logo */}
-                    <div className="flex-shrink-0 flex items-center">
+        <header className="bg-gradient-to-r from-white to-blue-50 border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+            <div className="max-w-7xl mx-auto px-6">
+                <div className="flex items-center justify-between h-20">
+                    <div className="flex-shrink-0 transition-transform duration-300 hover:scale-105">
                         <Image
                             src="/DComalaLogo.png"
                             alt="D Comala Logo"
-                            width={120}
+                            width={130}
                             height={80}
                             className="object-contain"
                             priority
                         />
                     </div>
 
-                    {/* Center Section: Navigation */}
-                    <nav className="hidden lg:flex flex-1 justify-center mx-8">
-                        <div className="flex space-x-2">
+                    <nav className="hidden lg:flex items-center justify-center flex-1 px-12">
+                        <div className="flex gap-6">
                             {navigationItems.map((item) => (
                                 <Link
                                     key={item.path}
                                     href={item.path}
-                                    className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out
+                                    className={`
+                                        group flex items-center px-5 py-2.5 rounded-lg text-sm font-medium
+                                        transition-all duration-300 ease-in-out relative
                                         ${isActive(item.path)
-                                            ? "text-blue-600 bg-blue-50 shadow-sm transform scale-105"
-                                            : "text-gray-600 hover:text-blue-600 hover:bg-blue-50/80"
-                                        }`}
+                                            ? "text-blue-700 bg-blue-50/80"
+                                            : "text-gray-600 hover:bg-blue-50/50 hover:text-blue-600"
+                                        }
+                                        ${isActive(item.path) 
+                                            ? "after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-blue-600"
+                                            : "after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-blue-600 after:scale-x-0 after:origin-left hover:after:scale-x-100 after:transition-transform after:duration-300"
+                                        }
+                                    `}
                                 >
-                                    <item.icon
-                                        className={`mr-2 h-5 w-5 transition-colors duration-200
-                                            ${isActive(item.path) ? "text-blue-600" : "text-gray-400"}`}
-                                    />
+                                    <item.icon className={`w-5 h-5 mr-2 transition-colors duration-300 ${
+                                        isActive(item.path) 
+                                            ? "text-blue-600" 
+                                            : "text-gray-400 group-hover:text-blue-600"
+                                    }`} />
                                     {item.name}
                                 </Link>
                             ))}
                         </div>
                     </nav>
 
-                    {/* Right Section: Notifications & Profile */}
-                    <div className="hidden lg:flex items-center space-x-6">
-                        {/* Notifications */}
-                        <div className="relative group">
-                            <button className="p-2 rounded-full text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
-                                <Bell className="h-6 w-6" />
-                                <span className="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-red-400 ring-2 ring-white" />
-                            </button>
-                        </div>
+                    <div className="hidden lg:flex items-center space-x-8">
+                        <button className="relative p-3 rounded-xl hover:bg-blue-50 transition-all duration-300 group">
+                            <Bell className="h-5 w-5 text-gray-500 group-hover:text-blue-600 transition-colors duration-300" />
+                            <span className="absolute top-2.5 right-2.5 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white animate-pulse" />
+                        </button>
 
-                        {/* Divider */}
-                        <div className="h-8 w-px bg-gray-200"></div>
+                        <div className="h-8 w-px bg-gray-200/80"></div>
 
-                        {/* Profile */}
-                        <div className="flex items-center space-x-3 pr-2">
+                        <div className="flex items-center gap-5">
                             <div className="flex flex-col items-end">
-                                <span className="text-sm font-medium text-gray-700">Admin User</span>
+                                <span className="text-sm font-semibold text-gray-800">Admin User</span>
                                 <span className="text-xs text-gray-500">admin@comala.com</span>
                             </div>
-                            <button className="p-2 rounded-full text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
-                                <LogOut className="h-5 w-5" />
+                            <button className="p-2.5 rounded-xl hover:bg-blue-50 transition-all duration-300 group">
+                                <LogOut className="h-5 w-5 text-gray-500 group-hover:text-blue-600 transition-colors duration-300" />
                             </button>
                         </div>
                     </div>
 
-                    {/* Mobile Menu Button */}
                     <button
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        className="lg:hidden p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
+                        className="lg:hidden p-2.5 rounded-xl hover:bg-blue-50 transition-all duration-300"
                     >
-                        <Menu className="h-6 w-6" />
+                        <Menu className="h-6 w-6 text-gray-600" />
                     </button>
                 </div>
 
-                {/* Mobile Menu */}
                 {isMenuOpen && (
-                    <div className="lg:hidden border-t border-gray-100">
-                        <div className="px-2 pt-2 pb-3 space-y-1">
-                            {navigationItems.map((item) => (
-                                <Link
-                                    key={item.path}
-                                    href={item.path}
-                                    className={`flex items-center px-3 py-2 rounded-lg text-base font-medium transition-colors duration-200
-                                        ${isActive(item.path)
-                                            ? "text-blue-600 bg-blue-50"
-                                            : "text-gray-600 hover:text-blue-600 hover:bg-blue-50"
-                                        }`}
-                                    onClick={() => setIsMenuOpen(false)}
-                                >
-                                    <item.icon
-                                        className={`mr-3 h-5 w-5
-                                            ${isActive(item.path) ? "text-blue-600" : "text-gray-400"}`}
-                                    />
-                                    {item.name}
-                                </Link>
-                            ))}
-                            
-                            <div className="border-t border-gray-200 mt-4 pt-4">
-                                <div className="px-3 mb-4">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <div className="text-base font-medium text-gray-800">Admin User</div>
-                                            <div className="text-sm text-gray-500">admin@comala.com</div>
-                                        </div>
-                                        <button className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50">
-                                            <LogOut className="h-5 w-5" />
-                                        </button>
+                    <div className="lg:hidden py-3 space-y-1.5 bg-white rounded-b-xl shadow-lg animate-fadeIn">
+                        {navigationItems.map((item) => (
+                            <Link
+                                key={item.path}
+                                href={item.path}
+                                className={`
+                                    flex items-center px-4 py-3 text-base font-medium
+                                    transition-all duration-300 ease-in-out relative
+                                    ${isActive(item.path)
+                                        ? "text-blue-700 bg-blue-50/80"
+                                        : "text-gray-600 hover:bg-blue-50/50 hover:text-blue-600"
+                                    }
+                                `}
+                                onClick={() => setIsMenuOpen(false)}
+                            >
+                                <item.icon className={`mr-3 h-5 w-5 ${
+                                    isActive(item.path) ? "text-blue-600" : "text-gray-400"
+                                }`} />
+                                {item.name}
+                            </Link>
+                        ))}
+
+                        <div className="border-t border-gray-100 mt-3 pt-3">
+                            <div className="px-4 py-2.5 bg-gray-50/50 rounded-lg mx-2">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-semibold text-gray-800">Admin User</p>
+                                        <p className="text-xs text-gray-500">admin@comala.com</p>
                                     </div>
+                                    <button className="p-2.5 rounded-xl hover:bg-blue-50 transition-all duration-300">
+                                        <LogOut className="h-5 w-5 text-gray-500" />
+                                    </button>
                                 </div>
-                                <button className="flex items-center w-full px-3 py-2 rounded-lg text-base font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50">
-                                    <Bell className="mr-3 h-5 w-5 text-gray-400" />
-                                    Notificaciones
-                                </button>
                             </div>
+
+                            <button className="flex items-center w-full px-4 py-3 mt-2 text-base font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all duration-300">
+                                <Bell className="mr-3 h-5 w-5 text-gray-400" />
+                                Notificaciones
+                            </button>
                         </div>
                     </div>
                 )}
