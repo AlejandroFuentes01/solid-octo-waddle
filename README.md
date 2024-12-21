@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Asistencia Tickets
 
-## Getting Started
+Asistencia Tickets es una aplicación web diseñada para gestionar tickets de soporte técnico. Incluye un sistema de roles (Administrador y Usuario Normal) con diferentes funcionalidades según el tipo de usuario.
 
-First, run the development server:
+## 🚀 Características
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Administrador:**
+  - Visualizar y gestionar todos los tickets.
+  - Filtrar tickets por estado o área.
+  - Crear y administrar usuarios.
+
+- **Usuario Normal:**
+  - Crear tickets de soporte.
+  - Visualizar los tickets creados y su estado.
+
+## 🛠️ Tecnologías Utilizadas
+
+- **Frontend:**
+  - [Next.js](https://nextjs.org/)
+  - [Tailwind CSS](https://tailwindcss.com/)
+  - Componentes personalizados como `HeaderAdmin`, `HeaderUser`, y `Footer`.
+
+- **Backend:**
+  - Prisma para la gestión de base de datos.
+  - MySQL como base de datos principal.
+  - API REST para la comunicación con el frontend.
+
+- **Otros:**
+  - Autenticación con NextAuth.js.
+  - Deploy planeado con [Vercel](https://vercel.com/).
+
+## 📂 Estructura del Proyecto
+
+```
+src/
+├── app/
+│   ├── admin/
+│   │   ├── dashboard/
+│   │   │   └── page.tsx
+│   │   ├── users/
+│   │   │   └── page.tsx
+│   ├── user/
+│   │   ├── tickets/
+│   │   │   └── page.tsx
+│   │   ├── create-ticket/
+│   │       └── page.tsx
+├── components/
+│   ├── HeaderAdmin.tsx
+│   ├── HeaderUser.tsx
+│   ├── Footer.tsx
+├── prisma/
+│   ├── schema.prisma
+├── styles/
+│   └── globals.css
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📦 Instalación
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Clona este repositorio:
+   ```bash
+   git clone https://github.com/tu-usuario/asistencia-tickets.git
+   cd asistencia-tickets
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. Instala las dependencias:
+   ```bash
+   npm install
+   ```
 
-## Learn More
+3. Configura las variables de entorno:
+   Crea un archivo `.env` en la raíz del proyecto con las siguientes variables:
+   ```env
+   DATABASE_URL="mysql://usuario:contraseña@localhost:3306/asistencia_tickets"
+   NEXTAUTH_SECRET="tu_secreto"
+   NEXTAUTH_URL="http://localhost:3000"
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+4. Realiza las migraciones de la base de datos:
+   ```bash
+   npx prisma migrate dev
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5. Inicia el servidor de desarrollo:
+   ```bash
+   npm run dev
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🧪 Pruebas
 
-## Deploy on Vercel
+Puedes probar la aplicación usando herramientas como Postman para interactuar con la API o simplemente navegando a `http://localhost:3000`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🤝 Contribuciones
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+¡Las contribuciones son bienvenidas! Por favor, abre un _issue_ o envía un _pull request_ si tienes mejoras o encuentras algún problema.
