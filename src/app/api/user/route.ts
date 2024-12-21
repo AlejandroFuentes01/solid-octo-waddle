@@ -1,11 +1,26 @@
-// src/app/api/user/route.ts
+// 1. api/user/route.ts
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { NextResponse } from 'next/server';
+import * as yup from 'yup';
+
+const userSchema = yup.object().shape({
+    fullName: yup.string().required('El nombre completo es obligatorio'),
+    username: yup.string().required('El nombre de usuario es obligatorio'),
+    email: yup.string().email('El correo electrónico no es válido').required('El correo electrónico es obligatorio'),
+    password: yup.string().required('La contraseña es obligatoria'),
+    area: yup.string().required('El área es obligatoria'),
+    role: yup.string().oneOf(['ADMIN', 'NORMAL'], 'El rol no es válido').required('El rol es obligatorio'),
+});
 
 export async function POST(request: Request) {
     try {
         const body = await request.json();
+        console.log('Datos recibidos:', body);
+
+        // Validar los datos de entrada
+        await userSchema.validate(body, { abortEarly: false });
+
         const { fullName, username, email, password, area, role } = body;
 
         // Verificar si el usuario ya existe
@@ -33,10 +48,10 @@ export async function POST(request: Request) {
             }
         }
 
-        // Encriptar la contraseña
+        // Hashear la contraseña antes de guardarla
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Crear el usuario
+        // Crear el nuevo usuario
         const user = await prisma.user.create({
             data: {
                 fullName,
@@ -48,6 +63,8 @@ export async function POST(request: Request) {
             },
         });
 
+        console.log('Usuario creado:', user);
+
         // Omitir la contraseña en la respuesta
         const { password: _, ...userWithoutPassword } = user;
 
@@ -57,7 +74,13 @@ export async function POST(request: Request) {
         });
 
     } catch (error) {
-        console.error('Error al crear usuario:', error);
+        console.error('Error detallado:', error);
+        if (error instanceof yup.ValidationError) {
+            return NextResponse.json(
+                { error: error.errors },
+                { status: 400 }
+            );
+        }
         return NextResponse.json(
             { error: 'Error al crear el usuario' },
             { status: 500 }

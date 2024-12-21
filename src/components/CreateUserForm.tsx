@@ -30,25 +30,46 @@ export default function CreateUserForm() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
+        setMessage("");
+    
         if (formData.password !== formData.confirmPassword) {
             setMessage("Las contraseñas no coinciden");
             return;
         }
-
+    
         // Validación básica de email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(formData.email)) {
             setMessage("Por favor ingrese un correo electrónico válido");
             return;
         }
-
+    
         try {
-            // Aquí iría la lógica para crear el usuario
+            const response = await fetch('/api/user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    fullName: formData.fullName,
+                    username: formData.username,
+                    email: formData.email,
+                    password: formData.password,
+                    area: formData.area,
+                    role: formData.role
+                }),
+            });
+    
+            const data = await response.json();
+    
+            if (!response.ok) {
+                throw new Error(data.error || 'Error al crear el usuario');
+            }
+    
             setMessage("Usuario creado exitosamente");
             setFormData(initialFormData);
         } catch (error) {
-            setMessage("Error al crear el usuario");
+            setMessage(error instanceof Error ? error.message : "Error al crear el usuario");
         }
     };
 
