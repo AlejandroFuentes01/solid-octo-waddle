@@ -103,8 +103,8 @@ export default function UserTickets() {
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Fecha
                                     </th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Días
+                                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Días Transcurridos
                                     </th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Acciones
@@ -140,7 +140,7 @@ export default function UserTickets() {
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {new Date(ticket.fecha).toLocaleDateString()}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                                 {ticket.diasTranscurridos}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

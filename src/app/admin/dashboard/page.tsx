@@ -97,19 +97,17 @@ export default function AdminDashboard() {
                         <h1 className="text-2xl font-bold text-gray-900">Panel de Control</h1>
                         <p className="text-gray-600 mt-1">Gestión de tickets de soporte técnico</p>
                     </div>
-                    
+
                     <div className="animation-controls flex items-center space-x-2 bg-white p-3 rounded-lg shadow-md">
                         <span className="text-sm text-gray-700">Nezuko Corriendo</span>
                         <button
                             onClick={() => setShowAnimation(!showAnimation)}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                                showAnimation ? 'bg-blue-600' : 'bg-gray-200'
-                            }`}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${showAnimation ? 'bg-blue-600' : 'bg-gray-200'
+                                }`}
                         >
                             <span
-                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                    showAnimation ? 'translate-x-6' : 'translate-x-1'
-                                }`}
+                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showAnimation ? 'translate-x-6' : 'translate-x-1'
+                                    }`}
                             />
                         </button>
                     </div>
@@ -153,8 +151,8 @@ export default function AdminDashboard() {
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Solicitante
                                     </th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Días
+                                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Días Transcurridos
                                     </th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Acciones
@@ -176,13 +174,12 @@ export default function AdminDashboard() {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                                                 <span
-                                                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                                        ticket.estatus === "Pendiente"
+                                                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${ticket.estatus === "Pendiente"
                                                             ? "bg-yellow-100 text-yellow-800"
                                                             : ticket.estatus === "En Proceso"
                                                                 ? "bg-blue-100 text-blue-800"
                                                                 : "bg-green-100 text-green-800"
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {ticket.estatus}
                                                 </span>
@@ -193,7 +190,7 @@ export default function AdminDashboard() {
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {ticket.solicitante}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                                 {ticket.diasTranscurridos}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

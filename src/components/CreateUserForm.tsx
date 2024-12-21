@@ -1,9 +1,11 @@
-import { Lock, User, UserPlus } from 'lucide-react';
+import { Lock, Mail, User, UserPlus } from 'lucide-react';
 import React, { useState } from 'react';
 import AreaSelector from './AreaSelector';
 
 interface FormData {
+    fullName: string;
     username: string;
+    email: string;      // Nuevo campo
     password: string;
     confirmPassword: string;
     area: string;
@@ -11,7 +13,9 @@ interface FormData {
 }
 
 const initialFormData: FormData = {
+    fullName: "",
     username: "",
+    email: "",          // Nuevo campo
     password: "",
     confirmPassword: "",
     area: "",
@@ -29,6 +33,13 @@ export default function CreateUserForm() {
 
         if (formData.password !== formData.confirmPassword) {
             setMessage("Las contraseñas no coinciden");
+            return;
+        }
+
+        // Validación básica de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            setMessage("Por favor ingrese un correo electrónico válido");
             return;
         }
 
@@ -50,6 +61,24 @@ export default function CreateUserForm() {
             )}
 
             <div className="space-y-2">
+                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+                    Nombre Completo
+                </label>
+                <div className="relative group">
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
+                    <input
+                        id="fullName"
+                        type="text"
+                        value={formData.fullName}
+                        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                        className="pl-10 w-full rounded-lg border border-gray-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+                        placeholder="Ingrese nombre completo"
+                        required
+                    />
+                </div>
+            </div>
+
+            <div className="space-y-2">
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700">
                     Nombre de Usuario
                 </label>
@@ -62,6 +91,25 @@ export default function CreateUserForm() {
                         onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                         className="pl-10 w-full rounded-lg border border-gray-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
                         placeholder="Ingrese nombre de usuario"
+                        required
+                    />
+                </div>
+            </div>
+
+            {/* Nuevo campo de email */}
+            <div className="space-y-2">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                    Correo Electrónico
+                </label>
+                <div className="relative group">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
+                    <input
+                        id="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="pl-10 w-full rounded-lg border border-gray-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+                        placeholder="Ingrese correo electrónico"
                         required
                     />
                 </div>
