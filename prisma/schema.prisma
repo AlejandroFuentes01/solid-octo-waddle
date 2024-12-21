@@ -1,3 +1,4 @@
+// prisma/schema.prisma
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
@@ -20,14 +21,16 @@ enum TicketStatus {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique @db.VarChar(50)
-  password  String   @db.VarChar(255)
-  role      Role     @default(NORMAL)
-  area      String   @db.VarChar(100)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  tickets   Ticket[]
+  id          Int       @id @default(autoincrement())
+  fullName    String    @db.VarChar(100)
+  username    String    @unique @db.VarChar(50)
+  email       String    @unique @db.VarChar(100)
+  password    String    @db.VarChar(255)
+  role        Role      @default(NORMAL)
+  area        String    @db.VarChar(100)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  tickets     Ticket[]
 }
 
 model Ticket {
