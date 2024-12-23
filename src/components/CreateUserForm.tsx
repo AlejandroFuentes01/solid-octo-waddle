@@ -5,78 +5,116 @@ import AreaSelector from './AreaSelector';
 interface FormData {
     fullName: string;
     username: string;
-    email: string;      // Nuevo campo
+    email: string;
     password: string;
     confirmPassword: string;
     area: string;
     role: string;
 }
 
+type MessageType = 'success' | 'error' | 'info';
+
 const initialFormData: FormData = {
     fullName: "",
     username: "",
-    email: "",          // Nuevo campo
+    email: "",
     password: "",
     confirmPassword: "",
     area: "",
     role: "normal",
 };
 
+const validatePassword = (password: string) => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    
+    if (password.length < minLength) {
+        return "La contraseña debe tener al menos 8 caracteres";
+    }
+    if (!hasUpperCase || !hasLowerCase || !hasNumbers) {
+        return "La contraseña debe contener mayúsculas, minúsculas y números";
+    }
+    return null;
+};
+
 export default function CreateUserForm() {
     const [formData, setFormData] = useState<FormData>(initialFormData);
     const [message, setMessage] = useState("");
+    const [messageType, setMessageType] = useState<MessageType>('info');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setMessage("");
-    
-        if (formData.password !== formData.confirmPassword) {
-            setMessage("Las contraseñas no coinciden");
-            return;
-        }
-    
-        // Validación básica de email
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(formData.email)) {
-            setMessage("Por favor ingrese un correo electrónico válido");
-            return;
-        }
-    
+        setIsSubmitting(true);
+
         try {
+            // Validación de contraseñas
+            if (formData.password !== formData.confirmPassword) {
+                setMessage("Las contraseñas no coinciden");
+                setMessageType('error');
+                return;
+            }
+
+            // Validación de contraseña
+            const passwordError = validatePassword(formData.password);
+            if (passwordError) {
+                setMessage(passwordError);
+                setMessageType('error');
+                return;
+            }
+
             const response = await fetch('/api/user', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    fullName: formData.fullName,
-                    username: formData.username,
-                    email: formData.email,
-                    password: formData.password,
-                    area: formData.area,
-                    role: formData.role
+                    ...formData,
+                    role: formData.role.toUpperCase()
                 }),
             });
-    
+
             const data = await response.json();
-    
+
             if (!response.ok) {
-                throw new Error(data.error || 'Error al crear el usuario');
+                if (Array.isArray(data.error)) {
+                    setMessage(data.error.join(', '));
+                    setMessageType('error');
+                } else if (typeof data.error === 'string') {
+                    setMessage(data.error);
+                    setMessageType('error');
+                } else {
+                    throw new Error('Error desconocido');
+                }
+                return;
             }
-    
+
             setMessage("Usuario creado exitosamente");
+            setMessageType('success');
             setFormData(initialFormData);
+            
         } catch (error) {
-            setMessage(error instanceof Error ? error.message : "Error al crear el usuario");
+            setMessage("Error al conectar con el servidor");
+            setMessageType('error');
+            console.error(error);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             {message && (
-                <div className="p-4 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 animate-fade-in">
+                <div className={`p-4 rounded-lg animate-fade-in ${
+                    messageType === 'success' ? 'bg-green-50 text-green-600 border border-green-100' :
+                    messageType === 'error' ? 'bg-red-50 text-red-600 border border-red-100' :
+                    'bg-blue-50 text-blue-600 border border-blue-100'
+                }`}>
                     {message}
                 </div>
             )}
@@ -117,7 +155,6 @@ export default function CreateUserForm() {
                 </div>
             </div>
 
-            {/* Nuevo campo de email */}
             <div className="space-y-2">
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                     Correo Electrónico
