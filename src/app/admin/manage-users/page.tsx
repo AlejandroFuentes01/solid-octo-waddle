@@ -2,55 +2,82 @@
 import Footer from "@/components/Footer";
 import HeaderAdmin from "@/components/HeaderAdmin";
 import { Pencil, Search, Trash2, UserCog } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // Tipo para los usuarios
 type User = {
     id: number;
     username: string;
+    email: string;
+    fullName: string;
     area: string;
     role: string;
     createdAt: string;
 };
 
 export default function ManageUsersPage() {
-    // Estado para la búsqueda
+    const [users, setUsers] = useState<User[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    // Datos de ejemplo - Reemplazar con datos reales de tu API
-    const [users] = useState<User[]>([
-        {
-            id: 1,
-            username: "juan.perez",
-            area: "Recursos Humanos",
-            role: "normal",
-            createdAt: "2024-01-15",
-        },
-        {
-            id: 2,
-            username: "maria.garcia",
-            area: "Contabilidad",
-            role: "admin",
-            createdAt: "2024-01-16",
-        },
-        // Agregar más usuarios de ejemplo
-    ]);
+    // Función para obtener usuarios
+    const fetchUsers = async (search: string = "") => {
+        try {
+            setIsLoading(true);
+            setError(null);
+            const response = await fetch(`/api/manage-users?search=${encodeURIComponent(search)}`);
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Error al cargar los usuarios');
+            }
+            
+            const data = await response.json();
+            setUsers(data);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Error al cargar los usuarios');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-    // Filtrar usuarios basado en el término de búsqueda
-    const filteredUsers = users.filter((user) =>
-        user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.area.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Cargar usuarios al montar el componente
+    useEffect(() => {
+        fetchUsers();
+    }, []);
 
-    const handleEdit = (userId: number) => {
+    // Manejar cambios en la búsqueda con debounce
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            fetchUsers(searchTerm);
+        }, 300);
+
+        return () => clearTimeout(timeoutId);
+    }, [searchTerm]);
+
+    const handleEdit = async (userId: number) => {
         // Implementar lógica de edición
         console.log("Editar usuario:", userId);
     };
 
-    const handleDelete = (userId: number) => {
-        // Implementar lógica de eliminación
+    const handleDelete = async (userId: number) => {
         if (window.confirm("¿Estás seguro de que deseas eliminar este usuario?")) {
-            console.log("Eliminar usuario:", userId);
+            try {
+                const response = await fetch(`/api/manage-users/${userId}`, {
+                    method: 'DELETE',
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al eliminar el usuario');
+                }
+
+                // Actualizar la lista de usuarios
+                setUsers(users.filter(user => user.id !== userId));
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al eliminar el usuario');
+            }
         }
     };
 
@@ -81,6 +108,19 @@ export default function ManageUsersPage() {
                             </div>
                         </div>
 
+                        {/* Estado de carga y error */}
+                        {isLoading && (
+                            <div className="text-center py-4">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                            </div>
+                        )}
+
+                        {error && (
+                            <div className="text-red-600 bg-red-50 p-4 rounded-md mb-4">
+                                {error}
+                            </div>
+                        )}
+
                         {/* Tabla de Usuarios */}
                         <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200">
@@ -90,10 +130,13 @@ export default function ManageUsersPage() {
                                             Usuario
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Área
+                                            Nombre Completo
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Rol
+                                            Email
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Área
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Fecha de Creación
@@ -104,8 +147,8 @@ export default function ManageUsersPage() {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {filteredUsers.length > 0 ? (
-                                        filteredUsers.map((user) => (
+                                    {!isLoading && users.length > 0 ? (
+                                        users.map((user) => (
                                             <tr key={user.id} className="hover:bg-gray-50">
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="font-medium text-gray-900">
@@ -113,15 +156,13 @@ export default function ManageUsersPage() {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                                                    {user.area}
+                                                    {user.fullName}
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'admin'
-                                                            ? 'bg-purple-100 text-purple-800'
-                                                            : 'bg-green-100 text-green-800'
-                                                        }`}>
-                                                        {user.role === 'admin' ? 'Administrador' : 'Usuario Normal'}
-                                                    </span>
+                                                <td className="px-6 py-4 whitespace-nowrap text-gray-500">
+                                                    {user.email}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-gray-500">
+                                                    {user.area}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-gray-500">
                                                     {new Date(user.createdAt).toLocaleDateString()}
@@ -146,8 +187,8 @@ export default function ManageUsersPage() {
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                                                No se encontraron usuarios
+                                            <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                                                {!isLoading && "No se encontraron usuarios"}
                                             </td>
                                         </tr>
                                     )}
