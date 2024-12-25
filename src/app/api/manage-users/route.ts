@@ -5,19 +5,21 @@ export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
         const search = searchParams.get("search") || "";
+        
+        // Convertir búsqueda a minúsculas para hacer la búsqueda case-insensitive manualmente
+        const searchLower = search.toLowerCase();
+        
+        console.log("Searching for:", searchLower);
 
-        // Consulta para obtener solo usuarios con rol NORMAL
         const users = await prisma.user.findMany({
             where: {
-                role: "NORMAL", // Filtrar por rol
-                OR: search
-                    ? [
-                          { username: { contains: search, mode: "insensitive" } },
-                          { email: { contains: search, mode: "insensitive" } },
-                          { fullName: { contains: search, mode: "insensitive" } },
-                          { area: { contains: search, mode: "insensitive" } },
-                      ]
-                    : undefined,
+                role: "NORMAL",
+                OR: search ? [
+                    { username: { contains: searchLower } },
+                    { email: { contains: searchLower } },
+                    { fullName: { contains: searchLower } },
+                    { area: { contains: searchLower } }
+                ] : undefined
             },
             select: {
                 id: true,
@@ -28,20 +30,21 @@ export async function GET(request: Request) {
                 role: true,
                 createdAt: true,
             },
+            orderBy: {
+                createdAt: 'desc'
+            }
         });
 
-        if (!users.length) {
-            return NextResponse.json(
-                { error: "No se encontraron usuarios con rol NORMAL" },
-                { status: 404 }
-            );
-        }
-
+        console.log(`Found ${users.length} users`);
+        
         return NextResponse.json(users);
+
     } catch (error) {
-        console.error("Error al obtener usuarios:", error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        console.error("Error fetching users:", errorMessage);
+        
         return NextResponse.json(
-            { error: "Error al obtener los usuarios" },
+            { error: "Error al obtener los usuarios", details: errorMessage },
             { status: 500 }
         );
     }

@@ -1,10 +1,10 @@
 "use client";
+
 import Footer from "@/components/Footer";
 import HeaderAdmin from "@/components/HeaderAdmin";
 import { Pencil, Search, Trash2, UserCog } from "lucide-react";
 import { useEffect, useState } from "react";
 
-// Tipo para los usuarios
 type User = {
     id: number;
     username: string;
@@ -21,12 +21,15 @@ export default function ManageUsersPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Función para obtener usuarios
     const fetchUsers = async (search: string = "") => {
         try {
             setIsLoading(true);
             setError(null);
-            const response = await fetch(`/api/manage-users?search=${encodeURIComponent(search)}`);
+            const response = await fetch(`/api/manage-users?search=${encodeURIComponent(search)}`, {
+                headers: {
+                    'Cache-Control': 'no-cache'
+                }
+            });
             
             if (!response.ok) {
                 const errorData = await response.json();
@@ -37,27 +40,37 @@ export default function ManageUsersPage() {
             setUsers(data);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Error al cargar los usuarios');
+            setUsers([]); // Limpiar usuarios en caso de error
         } finally {
             setIsLoading(false);
         }
     };
 
-    // Cargar usuarios al montar el componente
+    // Cargar usuarios iniciales
     useEffect(() => {
         fetchUsers();
     }, []);
 
-    // Manejar cambios en la búsqueda con debounce
+    // Manejar búsqueda con debounce
     useEffect(() => {
         const timeoutId = setTimeout(() => {
-            fetchUsers(searchTerm);
+            if (searchTerm !== "") {
+                fetchUsers(searchTerm);
+            } else {
+                fetchUsers();
+            }
         }, 300);
 
         return () => clearTimeout(timeoutId);
     }, [searchTerm]);
 
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setSearchTerm(value);
+        setError(null);
+    };
+
     const handleEdit = async (userId: number) => {
-        // Implementar lógica de edición
         console.log("Editar usuario:", userId);
     };
 
@@ -72,7 +85,6 @@ export default function ManageUsersPage() {
                     throw new Error('Error al eliminar el usuario');
                 }
 
-                // Actualizar la lista de usuarios
                 setUsers(users.filter(user => user.id !== userId));
             } catch (error) {
                 console.error('Error:', error);
@@ -88,7 +100,6 @@ export default function ManageUsersPage() {
             <main className="flex-grow py-8 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto">
                     <div className="bg-white p-6 rounded-lg shadow-lg">
-                        {/* Encabezado y Búsqueda */}
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
                             <div className="flex items-center space-x-2">
                                 <UserCog className="h-6 w-6 text-blue-600" />
@@ -100,15 +111,14 @@ export default function ManageUsersPage() {
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                                 <input
                                     type="text"
-                                    placeholder="Buscar usuarios..."
+                                    placeholder="Buscar por nombre o usuario..."
                                     value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onChange={handleSearchChange}
                                     className="pl-10 w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                             </div>
                         </div>
 
-                        {/* Estado de carga y error */}
                         {isLoading && (
                             <div className="text-center py-4">
                                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
@@ -121,7 +131,6 @@ export default function ManageUsersPage() {
                             </div>
                         )}
 
-                        {/* Tabla de Usuarios */}
                         <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
@@ -188,7 +197,7 @@ export default function ManageUsersPage() {
                                     ) : (
                                         <tr>
                                             <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                                                {!isLoading && "No se encontraron usuarios"}
+                                                {!isLoading && (searchTerm ? "No se encontraron usuarios con ese criterio de búsqueda" : "No se encontraron usuarios")}
                                             </td>
                                         </tr>
                                     )}
