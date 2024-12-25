@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "diddy": "npm run dev"
+    "navidad": "npm run dev"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",

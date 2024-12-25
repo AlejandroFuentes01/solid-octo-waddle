@@ -2,7 +2,7 @@
 
 import Footer from "@/components/Footer";
 import HeaderAdmin from "@/components/HeaderAdmin";
-import { Pencil, Search, Trash2, UserCog } from "lucide-react";
+import { Building, Calendar, Mail, Pencil, Search, Trash2, UserCog } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type User = {
@@ -100,6 +100,7 @@ export default function ManageUsersPage() {
             <main className="flex-grow py-8 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto">
                     <div className="bg-white p-6 rounded-lg shadow-lg">
+                        {/* Header y búsqueda */}
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
                             <div className="flex items-center space-x-2">
                                 <UserCog className="h-6 w-6 text-blue-600" />
@@ -119,6 +120,7 @@ export default function ManageUsersPage() {
                             </div>
                         </div>
 
+                        {/* Loading y Error states */}
                         {isLoading && (
                             <div className="text-center py-4">
                                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
@@ -131,7 +133,8 @@ export default function ManageUsersPage() {
                             </div>
                         )}
 
-                        <div className="overflow-x-auto">
+                        {/* Vista de tabla para desktop */}
+                        <div className="hidden md:block overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
                                     <tr>
@@ -203,6 +206,56 @@ export default function ManageUsersPage() {
                                     )}
                                 </tbody>
                             </table>
+                        </div>
+
+                        {/* Vista de tarjetas para mobile */}
+                        <div className="md:hidden space-y-4">
+                            {!isLoading && users.length > 0 ? (
+                                users.map((user) => (
+                                    <div key={user.id} className="bg-white border rounded-lg p-4 shadow-sm">
+                                        <div className="flex justify-between items-start mb-3">
+                                            <div>
+                                                <h3 className="text-lg font-medium text-gray-900">
+                                                    {user.fullName}
+                                                </h3>
+                                                <p className="text-sm text-gray-600">@{user.username}</p>
+                                            </div>
+                                            <div className="flex space-x-2">
+                                                <button
+                                                    onClick={() => handleEdit(user.id)}
+                                                    className="text-indigo-600 p-1 hover:bg-indigo-50 rounded-full"
+                                                >
+                                                    <Pencil className="h-5 w-5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(user.id)}
+                                                    className="text-red-600 p-1 hover:bg-red-50 rounded-full"
+                                                >
+                                                    <Trash2 className="h-5 w-5" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center text-sm text-gray-600">
+                                                <Mail className="h-4 w-4 mr-2" />
+                                                {user.email}
+                                            </div>
+                                            <div className="flex items-center text-sm text-gray-600">
+                                                <Building className="h-4 w-4 mr-2" />
+                                                {user.area}
+                                            </div>
+                                            <div className="flex items-center text-sm text-gray-600">
+                                                <Calendar className="h-4 w-4 mr-2" />
+                                                {new Date(user.createdAt).toLocaleDateString()}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-4 text-gray-500">
+                                    {!isLoading && (searchTerm ? "No se encontraron usuarios con ese criterio de búsqueda" : "No se encontraron usuarios")}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
