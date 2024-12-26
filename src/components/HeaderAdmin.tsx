@@ -2,12 +2,19 @@
 import { Bell, Home, LogOut, Menu, UserPlus, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { useSession, signOut } from "next-auth/react";
 
 export default function HeaderAdmin() {
     const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { data: session } = useSession();
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        await signOut({ redirect: true, callbackUrl: '/login' });
+    };
 
     const isActive = (path: string) => pathname === path;
 
@@ -78,10 +85,17 @@ export default function HeaderAdmin() {
                         {/* User Info and Logout */}
                         <div className="flex items-center space-x-4">
                             <div className="flex flex-col items-end">
-                                <span className="text-sm font-semibold text-gray-800 leading-tight">Admin User</span>
-                                <span className="text-xs text-gray-500">admin@comala.com</span>
+                                <span className="text-sm font-semibold text-gray-800 leading-tight">
+                                    {session?.user?.name || 'Cargando...'}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                    {session?.user?.email || 'Cargando...'}
+                                </span>
                             </div>
-                            <button className="p-2 rounded-lg hover:bg-blue-50 transition-all duration-300 group">
+                            <button 
+                                onClick={handleLogout}
+                                className="p-2 rounded-lg hover:bg-blue-50 transition-all duration-300 group"
+                            >
                                 <LogOut className="h-5 w-5 text-gray-500 group-hover:text-blue-600 transition-colors duration-300" />
                             </button>
                         </div>
@@ -123,10 +137,17 @@ export default function HeaderAdmin() {
                             <div className="px-4 py-2 mx-2">
                                 <div className="flex items-center justify-between bg-gray-50 p-2.5 rounded-lg">
                                     <div>
-                                        <p className="text-sm font-semibold text-gray-800">Admin User</p>
-                                        <p className="text-xs text-gray-500">admin@comala.com</p>
+                                        <p className="text-sm font-semibold text-gray-800">
+                                            {session?.user?.name || 'Cargando...'}
+                                        </p>
+                                        <p className="text-xs text-gray-500">
+                                            {session?.user?.email || 'Cargando...'}
+                                        </p>
                                     </div>
-                                    <button className="p-2 rounded-lg hover:bg-blue-50 transition-all duration-300">
+                                    <button 
+                                        onClick={handleLogout}
+                                        className="p-2 rounded-lg hover:bg-blue-50 transition-all duration-300"
+                                    >
                                         <LogOut className="h-5 w-5 text-gray-500" />
                                     </button>
                                 </div>
