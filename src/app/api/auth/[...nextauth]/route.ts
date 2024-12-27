@@ -1,3 +1,4 @@
+// app/api/auth/[...nextauth]/route.ts
 import { PrismaClient } from "@prisma/client";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -19,6 +20,7 @@ const handler = NextAuth({
                         throw new Error("Por favor, ingresa usuario y contraseña");
                     }
 
+                    // Buscar usuario y validar credenciales
                     const user = await prisma.user.findUnique({
                         where: { username: credentials.username },
                         select: {
@@ -36,11 +38,13 @@ const handler = NextAuth({
                         throw new Error("Usuario y/o contraseña incorrecta");
                     }
 
+                    // Verificar contraseña
                     const isValid = await verifyPassword(credentials.password, user.password);
                     if (!isValid) {
                         throw new Error("Usuario y/o contraseña incorrecta");
                     }
 
+                    // Devolver datos del usuario sin la contraseña
                     return {
                         id: user.id.toString(),
                         username: user.username,
@@ -60,27 +64,24 @@ const handler = NextAuth({
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
-                return {
-                    ...token,
-                    id: user.id,
-                    username: user.username,
-                    role: user.role,
-                    area: user.area,
-                };
+                token.id = user.id;
+                token.username = user.username;
+                token.role = user.role;
+                token.area = user.area;
             }
             return token;
         },
         async session({ session, token }) {
-            return {
-                ...session,
-                user: {
+            if (token) {
+                session.user = {
                     ...session.user,
                     id: token.id,
                     username: token.username,
                     role: token.role,
                     area: token.area,
-                },
-            };
+                };
+            }
+            return session;
         },
     },
     pages: {
