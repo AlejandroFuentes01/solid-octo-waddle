@@ -1,4 +1,3 @@
-// app/api/manage-users/[id]/change-password/route.ts
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
@@ -12,16 +11,36 @@ export async function PUT(
     try {
         const session = await getServerSession(authOptions);
         
-        if (!session) {
+        if (!session?.user) {
             return NextResponse.json(
                 { error: "No autorizado" },
                 { status: 401 }
             );
         }
 
+        // Obtener y validar el ID del usuario
         const { id } = context.params;
         const userId = parseInt(id);
-        const { newPassword, adminPassword } = await request.json();
+
+        if (isNaN(userId)) {
+            return NextResponse.json(
+                { error: "ID de usuario inválido" },
+                { status: 400 }
+            );
+        }
+
+        // Obtener y validar los datos del body
+        let body;
+        try {
+            body = await request.json();
+        } catch (e) {
+            return NextResponse.json(
+                { error: "Error al procesar los datos enviados" },
+                { status: 400 }
+            );
+        }
+
+        const { newPassword, adminPassword } = body || {};
 
         if (!newPassword || !adminPassword) {
             return NextResponse.json(
@@ -30,7 +49,19 @@ export async function PUT(
             );
         }
 
-        // Verificar la contraseña del administrador
+        // Verificar que el usuario a modificar existe
+        const targetUser = await prisma.user.findUnique({
+            where: { id: userId }
+        });
+
+        if (!targetUser) {
+            return NextResponse.json(
+                { error: "Usuario no encontrado" },
+                { status: 404 }
+            );
+        }
+
+        // Verificar la contraseña del administrador y sus permisos
         const adminUser = await prisma.user.findUnique({
             where: { username: session.user.username },
             select: { password: true, role: true }
@@ -74,6 +105,7 @@ export async function PUT(
 
     } catch (error) {
         console.error("Error al cambiar la contraseña:", error);
+        
         return NextResponse.json(
             { error: "Error al cambiar la contraseña" },
             { status: 500 }
