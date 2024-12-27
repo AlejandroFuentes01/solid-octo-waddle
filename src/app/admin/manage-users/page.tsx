@@ -2,6 +2,7 @@
 
 import Footer from "@/components/Footer";
 import HeaderAdmin from "@/components/HeaderAdmin";
+import PasswordChangeDialog from '@/components/PasswordChangeDialog';
 import { Building, Calendar, Mail, Pencil, Search, Trash2, UserCog } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -20,6 +21,8 @@ export default function ManageUsersPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
     const fetchUsers = async (search: string = "") => {
         try {
@@ -70,8 +73,12 @@ export default function ManageUsersPage() {
         setError(null);
     };
 
-    const handleEdit = async (userId: number) => {
-        console.log("Editar usuario:", userId);
+    const handleEdit = (userId: number) => {
+        const user = users.find(u => u.id === userId);
+        if (user) {
+            setSelectedUser(user);
+            setIsPasswordDialogOpen(true);
+        }
     };
 
     const handleDelete = async (userId: number) => {
@@ -262,6 +269,19 @@ export default function ManageUsersPage() {
             </main>
 
             <Footer />
+
+            {/* Password Change Dialog */}
+            {selectedUser && (
+                <PasswordChangeDialog
+                    isOpen={isPasswordDialogOpen}
+                    onClose={() => {
+                        setIsPasswordDialogOpen(false);
+                        setSelectedUser(null);
+                    }}
+                    userId={selectedUser.id}
+                    username={selectedUser.username}
+                />
+            )}
         </div>
     );
 }
