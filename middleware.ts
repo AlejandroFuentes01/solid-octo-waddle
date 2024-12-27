@@ -7,6 +7,7 @@ export default withAuth(
 
         // Si el usuario está autenticado, redirigir según su rol
         if (token) {
+            console.log("Token role:", token.role);
             // Redirigir ADMIN a /admin/dashboard
             if (token.role === "ADMIN") {
                 return NextResponse.redirect(new URL("/admin/dashboard", req.url));
