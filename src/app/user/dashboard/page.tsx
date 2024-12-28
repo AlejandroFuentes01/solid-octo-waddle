@@ -6,7 +6,7 @@ import HeaderUser from "@/components/HeaderUser";
 import SearchBar from "@/components/SearchBar";
 import StatusFilter from "@/components/StatusFilter";
 import { Eye } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface Ticket {
     folio: number;
@@ -18,27 +18,36 @@ interface Ticket {
 }
 
 export default function UserTickets() {
-    const [tickets] = useState<Ticket[]>([
-        {
-            folio: 101,
-            area: "Soporte Técnico",
-            servicioSolicitado: "Revisión de equipo",
-            estatus: "Pendiente",
-            fecha: "2024-03-15",
-            diasTranscurridos: 5,
-        },
-        {
-            folio: 102,
-            area: "Redes",
-            servicioSolicitado: "Configuración de red",
-            estatus: "Finalizado",
-            fecha: "2024-03-10",
-            diasTranscurridos: 10,
-        },
-    ]);
-
+    const [tickets, setTickets] = useState<Ticket[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("todos");
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchTickets = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                const response = await fetch('/api/tickets/user');
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Error al cargar los tickets');
+                }
+                
+                const data = await response.json();
+                setTickets(data);
+            } catch (error) {
+                console.error('Error al cargar los tickets:', error);
+                setError(error instanceof Error ? error.message : 'Error al cargar los tickets');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTickets();
+    }, []);
 
     const filteredTickets = tickets.filter((ticket) => {
         const matchesSearch =
@@ -67,6 +76,12 @@ export default function UserTickets() {
                         <p className="text-gray-600 mt-1">Visualiza y gestiona los tickets que has creado</p>
                     </div>
                 </div>
+
+                {error && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="text-red-700">{error}</p>
+                    </div>
+                )}
 
                 <Card className="mb-6">
                     <div className="p-6">
@@ -112,7 +127,13 @@ export default function UserTickets() {
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {filteredTickets.length > 0 ? (
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+                                            Cargando tickets...
+                                        </td>
+                                    </tr>
+                                ) : filteredTickets.length > 0 ? (
                                     filteredTickets.map((ticket) => (
                                         <tr key={ticket.folio} className="hover:bg-gray-50">
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -130,8 +151,8 @@ export default function UserTickets() {
                                                         ticket.estatus === "Pendiente"
                                                             ? "bg-yellow-100 text-yellow-800"
                                                             : ticket.estatus === "En Proceso"
-                                                                ? "bg-blue-100 text-blue-800"
-                                                                : "bg-green-100 text-green-800"
+                                                            ? "bg-blue-100 text-blue-800"
+                                                            : "bg-green-100 text-green-800"
                                                     }`}
                                                 >
                                                     {ticket.estatus}
