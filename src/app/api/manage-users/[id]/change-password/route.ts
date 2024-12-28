@@ -11,37 +11,18 @@ export async function PUT(
     try {
         const session = await getServerSession(authOptions);
         
-        if (!session?.user) {
+        if (!session?.user?.role || session.user.role !== 'ADMIN') {
             return NextResponse.json(
-                { error: "No autorizado" },
-                { status: 401 }
+                { error: "No tienes permisos para realizar esta acción" },
+                { status: 403 }
             );
         }
 
-        // Obtener y validar el ID del usuario
-        const { id } = context.params;
+        const { id } = await context.params;
         const userId = parseInt(id);
 
-        if (isNaN(userId)) {
-            return NextResponse.json(
-                { error: "ID de usuario inválido" },
-                { status: 400 }
-            );
-        }
-
-        // Obtener y validar los datos del body
-        let body;
-        try {
-            body = await request.json();
-        } catch (e) {
-            return NextResponse.json(
-                { error: "Error al procesar los datos enviados" },
-                { status: 400 }
-            );
-        }
-
-        const { newPassword, adminPassword } = body || {};
-
+        const { newPassword, adminPassword } = await request.json();
+        
         if (!newPassword || !adminPassword) {
             return NextResponse.json(
                 { error: "Se requieren todos los campos" },
@@ -49,7 +30,7 @@ export async function PUT(
             );
         }
 
-        // Verificar que el usuario a modificar existe
+        // Verificar que existe el usuario a modificar
         const targetUser = await prisma.user.findUnique({
             where: { id: userId }
         });
@@ -61,23 +42,16 @@ export async function PUT(
             );
         }
 
-        // Verificar la contraseña del administrador y sus permisos
+        // Verificar la contraseña del administrador
         const adminUser = await prisma.user.findUnique({
             where: { username: session.user.username },
-            select: { password: true, role: true }
+            select: { password: true }
         });
 
         if (!adminUser) {
             return NextResponse.json(
                 { error: "Administrador no encontrado" },
                 { status: 404 }
-            );
-        }
-
-        if (adminUser.role !== 'ADMIN') {
-            return NextResponse.json(
-                { error: "No tienes permisos para realizar esta acción" },
-                { status: 403 }
             );
         }
 
@@ -105,7 +79,6 @@ export async function PUT(
 
     } catch (error) {
         console.error("Error al cambiar la contraseña:", error);
-        
         return NextResponse.json(
             { error: "Error al cambiar la contraseña" },
             { status: 500 }
