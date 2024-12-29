@@ -4,6 +4,25 @@ import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { verifyPassword } from "../../../../util/auth";
 
+/**
+ * Este archivo define la configuración de autenticación para Next.js utilizando NextAuth.
+ *
+ * La API maneja la autenticación de usuarios mediante credenciales (usuario y contraseña).
+ *
+ * Funcionalidad:
+ * - Utiliza Prisma como ORM para interactuar con la base de datos.
+ * - Define un proveedor de credenciales para la autenticación.
+ * - Verifica las credenciales del usuario y autentica al usuario si las credenciales son correctas.
+ * - Devuelve información del usuario autenticado, incluyendo su ID, nombre de usuario, correo electrónico, nombre completo, rol y área.
+ *
+ * Proceso de Autenticación:
+ * - El usuario ingresa su nombre de usuario y contraseña.
+ * - La API busca al usuario en la base de datos utilizando Prisma.
+ * - Si el usuario es encontrado, la contraseña es verificada utilizando la función `verifyPassword`.
+ * - Si las credenciales son correctas, se devuelve la información del usuario.
+ * - Si las credenciales son incorrectas o faltan, se lanza un error.
+ */
+
 const prisma = new PrismaClient();
 
 export const authOptions: NextAuthOptions = {
@@ -98,3 +117,4 @@ export const authOptions: NextAuthOptions = {
 const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
+
