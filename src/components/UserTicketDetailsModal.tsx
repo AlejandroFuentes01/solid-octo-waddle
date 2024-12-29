@@ -7,12 +7,12 @@ const TicketDetailsModal = ({ ticket, isOpen, onClose }) => {
 
     const formatDate = (dateString) => {
         if (!dateString) return 'Fecha no disponible';
-
+        
         try {
             const date = new Date(dateString);
             // Verificar si la fecha es válida
             if (isNaN(date.getTime())) return 'Fecha no válida';
-
+            
             return date.toLocaleDateString('es-ES', {
                 year: 'numeric',
                 month: 'long',
@@ -46,29 +46,13 @@ const TicketDetailsModal = ({ ticket, isOpen, onClose }) => {
         return text[status] || 'Pendiente';
     };
 
-    // Verificar si el ticket fue actualizado comparando fechas válidas
-    const wasUpdated = () => {
-        if (!ticket.createdAt || !ticket.updatedAt) return false;
-
-        try {
-            const created = new Date(ticket.createdAt);
-            const updated = new Date(ticket.updatedAt);
-
-            // Verificar si ambas fechas son válidas
-            if (isNaN(created.getTime()) || isNaN(updated.getTime())) return false;
-
-            // Comparar las fechas
-            return updated.getTime() > created.getTime();
-        } catch (error) {
-            console.error('Error al comparar fechas:', error);
-            return false;
-        }
-    };
+    // Verificar si hay fecha de última actualización
+    const hasStatusUpdate = ticket.updatedAt && ticket.updatedAt !== ticket.createdAt;
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[90vh]"
-                onClick={(e) => e.stopPropagation()}>
+            <div className="bg-white rounded-xl w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[90vh]" 
+                 onClick={(e) => e.stopPropagation()}>
                 {/* Header */}
                 <div className="p-6 border-b">
                     <div className="flex justify-between items-start">
@@ -84,12 +68,6 @@ const TicketDetailsModal = ({ ticket, isOpen, onClose }) => {
                                     <Clock className="h-4 w-4" />
                                     Creado: {formatDate(ticket.createdAt)}
                                 </p>
-                                {wasUpdated() && (
-                                    <p className="text-sm text-gray-500 flex items-center gap-2">
-                                        <RotateCcw className="h-4 w-4" />
-                                        Actualizado: {formatDate(ticket.updatedAt)}
-                                    </p>
-                                )}
                             </div>
                         </div>
                         <button
@@ -103,12 +81,20 @@ const TicketDetailsModal = ({ ticket, isOpen, onClose }) => {
 
                 {/* Content */}
                 <div className="p-6 space-y-8">
-                    {/* Status Badge */}
-                    <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-600">Estado actual</span>
-                        <span className={`px-4 py-1.5 text-sm font-medium rounded-full border ${getStatusStyles(ticket.status)}`}>
-                            {getStatusText(ticket.status)}
-                        </span>
+                    {/* Status Badge and Last Update */}
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-gray-600">Estado actual</span>
+                            <span className={`px-4 py-1.5 text-sm font-medium rounded-full border ${getStatusStyles(ticket.status)}`}>
+                                {getStatusText(ticket.status)}
+                            </span>
+                        </div>
+                        {hasStatusUpdate && (
+                            <p className="text-sm text-gray-500 flex items-center gap-2 justify-end">
+                                <RotateCcw className="h-4 w-4" />
+                                Último cambio de estado: {formatDate(ticket.updatedAt)}
+                            </p>
+                        )}
                     </div>
 
                     {/* Info Grid */}

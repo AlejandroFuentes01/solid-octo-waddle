@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import HeaderUser from "@/components/HeaderUser";
 import SearchBar from "@/components/SearchBar";
 import StatusFilter from "@/components/StatusFilter";
+import UserTicketDetailsModal from "@/components/UserTicketDetailsModal";
 import { Eye } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -25,6 +26,8 @@ export default function UserTickets() {
     const [statusFilter, setStatusFilter] = useState<string>("todos");
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+    const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchTickets = async () => {
@@ -32,12 +35,12 @@ export default function UserTickets() {
                 setLoading(true);
                 setError(null);
                 const response = await fetch('/api/tickets/user');
-                
+
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.error || 'Error al cargar los tickets');
                 }
-                
+
                 const data = await response.json();
                 setTickets(data);
             } catch (error) {
@@ -79,7 +82,11 @@ export default function UserTickets() {
     });
 
     const handleViewDetails = (folio: string) => {
-        console.log("Ver detalles del ticket:", folio);
+        const ticket = tickets.find(t => t.folio === folio);
+        if (ticket) {
+            setSelectedTicket(ticket);
+            setIsModalOpen(true);
+        }
     };
 
     // Componente para la vista de tarjeta en móvil
@@ -94,7 +101,7 @@ export default function UserTickets() {
                     {ticket.status.replace('_', ' ')}
                 </span>
             </div>
-            
+
             <div className="space-y-2 mb-3">
                 <div className="flex justify-between items-center">
                     <span className="text-xs text-gray-500">Servicio:</span>
@@ -111,7 +118,7 @@ export default function UserTickets() {
                     <span className="text-xs text-gray-900">{ticket.diasTranscurridos}</span>
                 </div>
             </div>
-            
+
             <button
                 onClick={() => handleViewDetails(ticket.folio)}
                 className="w-full mt-2 flex items-center justify-center space-x-2 text-sm text-blue-600 hover:text-blue-800 py-2 border border-blue-100 rounded-md transition-all hover:bg-blue-50"
@@ -258,6 +265,15 @@ export default function UserTickets() {
             </main>
 
             <Footer />
+
+            <UserTicketDetailsModal
+                ticket={selectedTicket}
+                isOpen={isModalOpen}
+                onClose={() => {
+                    setIsModalOpen(false);
+                    setSelectedTicket(null);
+                }}
+            />
         </div>
     );
 }
