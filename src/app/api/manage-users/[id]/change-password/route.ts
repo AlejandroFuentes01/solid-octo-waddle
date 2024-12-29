@@ -4,6 +4,27 @@ import bcrypt from 'bcryptjs';
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 
+/**
+ * Este archivo define una ruta API en Next.js para cambiar la contraseña de un usuario específico.
+ *
+ * La ruta maneja solicitudes PUT y permite a los administradores cambiar la contraseña de un usuario.
+ *
+ * Funcionalidad:
+ * - Verifica si el usuario está autenticado y tiene permisos de administrador utilizando `next-auth`.
+ * - Extrae el ID del usuario de los parámetros de la URL de la solicitud.
+ * - Valida los datos de entrada, incluyendo la nueva contraseña y la contraseña del administrador.
+ * - Verifica la contraseña del administrador para asegurar que tiene permisos para realizar la acción.
+ * - Hashea la nueva contraseña y actualiza la contraseña del usuario en la base de datos utilizando Prisma.
+ * - Devuelve una respuesta JSON indicando el éxito o el error de la operación.
+ *
+ * Proceso de Cambio de Contraseña:
+ * - El administrador envía una solicitud PUT con el ID del usuario a modificar en los parámetros de la URL y las contraseñas en el cuerpo de la solicitud.
+ * - La API verifica que el administrador esté autenticado y tenga permisos.
+ * - La API extrae y valida el ID del usuario y las contraseñas.
+ * - Si las contraseñas son válidas, la API hashea la nueva contraseña y actualiza la contraseña del usuario en la base de datos.
+ * - La API devuelve una respuesta JSON indicando si el cambio de contraseña fue exitoso o si ocurrió un error.
+ */
+
 export async function PUT(
     request: NextRequest,
     context: { params: { id: string } }
