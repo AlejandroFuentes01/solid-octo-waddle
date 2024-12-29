@@ -15,9 +15,10 @@ export default function StatusFilter({ value, onChange }: StatusFilterProps) {
                 className="rounded-lg border border-gray-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
             >
                 <option value="todos">Todos los estados</option>
-                <option value="pendiente">Pendiente</option>
-                <option value="en proceso">En Proceso</option>
-                <option value="finalizado">Finalizado</option>
+                <option value="PENDIENTE">Pendiente</option>
+                <option value="EN_PROCESO">En Proceso</option>
+                <option value="RESUELTO">Resuelto</option>
+                <option value="CANCELADO">Cancelado</option>
             </select>
         </div>
     );
