@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import HeaderAdmin from "@/components/HeaderAdmin";
 import SearchBar from "@/components/SearchBar";
 import StatusFilter from "@/components/StatusFilter";
+import TicketDetailsModal from "@/components/TicketDetailsModal";
 import { Eye, RefreshCw } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -57,7 +58,7 @@ const TicketCard = ({ ticket, onStatusChange, onViewDetails }: {
             </div>
             <StatusBadge status={ticket.status} />
         </div>
-        
+
         <div className="space-y-2 mb-3">
             <div className="flex justify-between items-center">
                 <span className="text-xs text-gray-500">Servicio:</span>
@@ -78,7 +79,7 @@ const TicketCard = ({ ticket, onStatusChange, onViewDetails }: {
                 <span className="text-xs text-gray-900">{ticket.diasTranscurridos}</span>
             </div>
         </div>
-        
+
         <div className="flex space-x-2">
             <button
                 onClick={() => onViewDetails(ticket.folio)}
@@ -105,16 +106,18 @@ export default function AdminDashboard() {
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("todos");
+    const [selectedTicket, setSelectedTicket] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const fetchTickets = async () => {
         try {
             setLoading(true);
             const response = await fetch('/api/admin/tickets');
-            
+
             if (!response.ok) {
                 throw new Error('Error al cargar los tickets');
             }
-            
+
             const data = await response.json();
             setTickets(data);
         } catch (err) {
@@ -161,7 +164,11 @@ export default function AdminDashboard() {
     };
 
     const handleViewDetails = (folio: string) => {
-        router.push(`/admin/tickets/${folio}`);
+        const ticket = tickets.find(t => t.folio === folio);
+        if (ticket) {
+            setSelectedTicket(ticket);
+            setIsModalOpen(true);
+        }
     };
 
     const filteredTickets = tickets.filter((ticket) => {
@@ -221,8 +228,8 @@ export default function AdminDashboard() {
                     {filteredTickets.length > 0 ? (
                         <div className="space-y-4">
                             {filteredTickets.map((ticket) => (
-                                <TicketCard 
-                                    key={ticket.id} 
+                                <TicketCard
+                                    key={ticket.id}
                                     ticket={ticket}
                                     onStatusChange={handleStatusChange}
                                     onViewDetails={handleViewDetails}
@@ -327,6 +334,15 @@ export default function AdminDashboard() {
             </main>
 
             <Footer />
+
+            <TicketDetailsModal
+                ticket={selectedTicket}
+                isOpen={isModalOpen}
+                onClose={() => {
+                    setIsModalOpen(false);
+                    setSelectedTicket(null);
+                }}
+            />
         </div>
     );
 }
