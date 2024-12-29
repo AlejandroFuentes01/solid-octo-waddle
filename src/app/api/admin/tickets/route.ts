@@ -5,41 +5,45 @@ import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * Este archivo define una ruta API en Next.js para que los administradores obtengan todos los tickets.
+ * Este archivo define una ruta API en Next.js para que los administradores gestionen tickets.
  *
- * La ruta maneja solicitudes GET, verifica la autenticación del usuario,
- * valida que el usuario tenga permisos de administrador y devuelve todos los tickets en la base de datos.
+ * La ruta maneja solicitudes GET, PATCH y DELETE, verifica la autenticación del usuario,
+ * valida que el usuario tenga permisos de administrador y gestiona los tickets en la base de datos.
  *
  * Funcionalidad:
  * - Verifica si el usuario está autenticado utilizando `next-auth`.
  * - Verifica si el usuario tiene permisos de administrador.
- * - Obtiene todos los tickets desde la base de datos.
- * - Devuelve los tickets en una respuesta JSON.
+ * - Obtiene, actualiza o elimina tickets según la operación.
  * - Maneja adecuadamente los errores y devuelve respuestas HTTP apropiadas.
  */
+
+// Función auxiliar para verificar permisos de administrador
+async function verifyAdminAccess(session) {
+    if (!session?.user?.email) {
+        return { error: 'No autorizado', status: 401 };
+    }
+
+    const user = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        select: { role: true }
+    });
+
+    if (!user || user.role !== 'ADMIN') {
+        return { error: 'No tienes permisos de administrador', status: 403 };
+    }
+
+    return null;
+}
 
 // GET: Obtener todos los tickets (solo admin)
 export async function GET(request: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
-
-        if (!session?.user?.email) {
+        const accessError = await verifyAdminAccess(session);
+        if (accessError) {
             return NextResponse.json(
-                { error: 'No autorizado' },
-                { status: 401 }
-            );
-        }
-
-        // Verificar si el usuario es administrador
-        const user = await prisma.user.findUnique({
-            where: { email: session.user.email },
-            select: { role: true }
-        });
-
-        if (!user || user.role !== 'ADMIN') {
-            return NextResponse.json(
-                { error: 'No tienes permisos de administrador' },
-                { status: 403 }
+                { error: accessError.error },
+                { status: accessError.status }
             );
         }
 
@@ -62,7 +66,7 @@ export async function GET(request: NextRequest) {
         // Transformar los datos para el formato esperado por el frontend
         const transformedTickets = tickets.map(ticket => {
             const diasTranscurridos = Math.floor(
-                (new Date().getTime() - new Date(ticket.createdAt).getTime()) / 
+                (new Date().getTime() - new Date(ticket.createdAt).getTime()) /
                 (1000 * 60 * 60 * 24)
             );
 
@@ -73,12 +77,14 @@ export async function GET(request: NextRequest) {
                 service: ticket.service,
                 status: ticket.status,
                 createdAt: ticket.createdAt.toISOString(),
+                updatedAt: ticket.updatedAt?.toISOString(), // Aseguramos que updatedAt se incluya
                 requester: ticket.requester,
                 description: ticket.description,
                 diasTranscurridos,
-                userName: ticket.user.fullName,
-                userEmail: ticket.user.email,
-                userArea: ticket.user.area
+                userId: ticket.userId,
+                userName: ticket.user?.fullName,
+                userEmail: ticket.user?.email,
+                userArea: ticket.user?.area
             };
         });
 
@@ -87,7 +93,7 @@ export async function GET(request: NextRequest) {
     } catch (error) {
         console.error('Error al obtener tickets:', error);
         return NextResponse.json(
-            { 
+            {
                 error: 'Error al obtener los tickets',
                 details: error instanceof Error ? error.message : 'Error desconocido'
             },
@@ -100,24 +106,11 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
-
-        if (!session?.user?.email) {
+        const accessError = await verifyAdminAccess(session);
+        if (accessError) {
             return NextResponse.json(
-                { error: 'No autorizado' },
-                { status: 401 }
-            );
-        }
-
-        // Verificar si el usuario es administrador
-        const user = await prisma.user.findUnique({
-            where: { email: session.user.email },
-            select: { role: true }
-        });
-
-        if (!user || user.role !== 'ADMIN') {
-            return NextResponse.json(
-                { error: 'No tienes permisos de administrador' },
-                { status: 403 }
+                { error: accessError.error },
+                { status: accessError.status }
             );
         }
 
@@ -152,12 +145,12 @@ export async function PATCH(request: NextRequest) {
             );
         }
 
-        // Actualizar el ticket
+        // Actualizar el ticket con la nueva fecha de actualización
         const updatedTicket = await prisma.ticket.update({
             where: { folio: folio },
             data: {
                 status: status as TicketStatus,
-                updatedAt: new Date()
+                updatedAt: new Date() // Aseguramos que se actualice la fecha
             },
             include: {
                 user: {
@@ -170,7 +163,7 @@ export async function PATCH(request: NextRequest) {
             }
         });
 
-        // Transformar la respuesta para mantener consistencia con el GET
+        // Transformar la respuesta para mantener consistencia
         const transformedTicket = {
             id: updatedTicket.id,
             folio: updatedTicket.folio,
@@ -178,16 +171,17 @@ export async function PATCH(request: NextRequest) {
             service: updatedTicket.service,
             status: updatedTicket.status,
             createdAt: updatedTicket.createdAt.toISOString(),
-            updatedAt: updatedTicket.updatedAt.toISOString(),
+            updatedAt: updatedTicket.updatedAt.toISOString(), // Incluimos explícitamente updatedAt
             requester: updatedTicket.requester,
             description: updatedTicket.description,
             diasTranscurridos: Math.floor(
                 (new Date().getTime() - new Date(updatedTicket.createdAt).getTime()) /
                 (1000 * 60 * 60 * 24)
             ),
-            userName: updatedTicket.user.fullName,
-            userEmail: updatedTicket.user.email,
-            userArea: updatedTicket.user.area
+            userId: updatedTicket.userId,
+            userName: updatedTicket.user?.fullName,
+            userEmail: updatedTicket.user?.email,
+            userArea: updatedTicket.user?.area
         };
 
         return NextResponse.json(transformedTicket);
@@ -195,7 +189,7 @@ export async function PATCH(request: NextRequest) {
     } catch (error) {
         console.error('Error al actualizar el ticket:', error);
         return NextResponse.json(
-            { 
+            {
                 error: 'Error al actualizar el ticket',
                 details: error instanceof Error ? error.message : 'Error desconocido'
             },
@@ -204,28 +198,15 @@ export async function PATCH(request: NextRequest) {
     }
 }
 
-// DELETE: Eliminar un ticket (opcional, si lo necesitas)
+// DELETE: Eliminar un ticket
 export async function DELETE(request: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
-
-        if (!session?.user?.email) {
+        const accessError = await verifyAdminAccess(session);
+        if (accessError) {
             return NextResponse.json(
-                { error: 'No autorizado' },
-                { status: 401 }
-            );
-        }
-
-        // Verificar si el usuario es administrador
-        const user = await prisma.user.findUnique({
-            where: { email: session.user.email },
-            select: { role: true }
-        });
-
-        if (!user || user.role !== 'ADMIN') {
-            return NextResponse.json(
-                { error: 'No tienes permisos de administrador' },
-                { status: 403 }
+                { error: accessError.error },
+                { status: accessError.status }
             );
         }
 
@@ -264,7 +245,7 @@ export async function DELETE(request: NextRequest) {
     } catch (error) {
         console.error('Error al eliminar el ticket:', error);
         return NextResponse.json(
-            { 
+            {
                 error: 'Error al eliminar el ticket',
                 details: error instanceof Error ? error.message : 'Error desconocido'
             },
