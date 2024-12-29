@@ -1,18 +1,17 @@
 'use client';
 
-import { Briefcase, Building2, Clock, RotateCcw, Tag, User, X } from 'lucide-react';
+import { Briefcase, Building2, Clock, Mail, RotateCcw, Tag, User, X } from 'lucide-react';
 
 const TicketDetailsModal = ({ ticket, isOpen, onClose }) => {
     if (!isOpen || !ticket) return null;
 
     const formatDate = (dateString) => {
         if (!dateString) return 'Fecha no disponible';
-
+        
         try {
             const date = new Date(dateString);
-            // Verificar si la fecha es válida
             if (isNaN(date.getTime())) return 'Fecha no válida';
-
+            
             return date.toLocaleDateString('es-ES', {
                 year: 'numeric',
                 month: 'long',
@@ -46,29 +45,12 @@ const TicketDetailsModal = ({ ticket, isOpen, onClose }) => {
         return text[status] || 'Pendiente';
     };
 
-    // Verificar si el ticket fue actualizado comparando fechas válidas
-    const wasUpdated = () => {
-        if (!ticket.createdAt || !ticket.updatedAt) return false;
-
-        try {
-            const created = new Date(ticket.createdAt);
-            const updated = new Date(ticket.updatedAt);
-
-            // Verificar si ambas fechas son válidas
-            if (isNaN(created.getTime()) || isNaN(updated.getTime())) return false;
-
-            // Comparar las fechas
-            return updated.getTime() > created.getTime();
-        } catch (error) {
-            console.error('Error al comparar fechas:', error);
-            return false;
-        }
-    };
+    const hasStatusUpdate = ticket.updatedAt && ticket.updatedAt !== ticket.createdAt;
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[90vh]"
-                onClick={(e) => e.stopPropagation()}>
+            <div className="bg-white rounded-xl w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[90vh]" 
+                 onClick={(e) => e.stopPropagation()}>
                 {/* Header */}
                 <div className="p-6 border-b">
                     <div className="flex justify-between items-start">
@@ -84,7 +66,7 @@ const TicketDetailsModal = ({ ticket, isOpen, onClose }) => {
                                     <Clock className="h-4 w-4" />
                                     Creado: {formatDate(ticket.createdAt)}
                                 </p>
-                                {wasUpdated() && (
+                                {hasStatusUpdate && (
                                     <p className="text-sm text-gray-500 flex items-center gap-2">
                                         <RotateCcw className="h-4 w-4" />
                                         Actualizado: {formatDate(ticket.updatedAt)}
@@ -122,14 +104,15 @@ const TicketDetailsModal = ({ ticket, isOpen, onClose }) => {
                                 <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
                                     <div>
                                         <p className="text-sm text-gray-600">Nombre completo</p>
-                                        <p className="text-sm font-medium text-gray-900">{ticket.requester}</p>
+                                        <p className="text-sm font-medium text-gray-900">{ticket.userName || 'No especificado'}</p>
                                     </div>
-                                    {ticket.user && (
-                                        <div>
-                                            <p className="text-sm text-gray-600">ID de Usuario</p>
-                                            <p className="text-sm font-medium text-gray-900">{ticket.userId}</p>
-                                        </div>
-                                    )}
+                                    <div>
+                                        <p className="text-sm text-gray-600 flex items-center gap-2">
+                                            <Mail className="h-4 w-4" />
+                                            Correo electrónico
+                                        </p>
+                                        <p className="text-sm font-medium text-gray-900">{ticket.userEmail || 'No especificado'}</p>
+                                    </div>
                                     <div>
                                         <p className="text-sm text-gray-600">Área</p>
                                         <p className="text-sm font-medium text-gray-900">{ticket.area}</p>

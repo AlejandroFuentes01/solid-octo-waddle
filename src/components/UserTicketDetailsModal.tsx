@@ -2,15 +2,32 @@
 
 import { Briefcase, Building2, Clock, RotateCcw, Tag, User, X } from 'lucide-react';
 
-const TicketDetailsModal = ({ ticket, isOpen, onClose }) => {
+interface Ticket {
+    id: number;
+    folio: string;
+    area: string;
+    service: string;
+    status: "PENDIENTE" | "EN_PROCESO" | "RESUELTO" | "CANCELADO";
+    createdAt: string;
+    updatedAt?: string;
+    description?: string;
+    diasTranscurridos?: number;
+}
+
+interface TicketDetailsModalProps {
+    ticket: Ticket | null;
+    isOpen: boolean;
+    onClose: () => void;
+}
+
+const UserTicketDetailsModal: React.FC<TicketDetailsModalProps> = ({ ticket, isOpen, onClose }) => {
     if (!isOpen || !ticket) return null;
 
-    const formatDate = (dateString) => {
+    const formatDate = (dateString: string) => {
         if (!dateString) return 'Fecha no disponible';
         
         try {
             const date = new Date(dateString);
-            // Verificar si la fecha es válida
             if (isNaN(date.getTime())) return 'Fecha no válida';
             
             return date.toLocaleDateString('es-ES', {
@@ -26,7 +43,7 @@ const TicketDetailsModal = ({ ticket, isOpen, onClose }) => {
         }
     };
 
-    const getStatusStyles = (status) => {
+    const getStatusStyles = (status: Ticket['status']) => {
         const styles = {
             PENDIENTE: 'bg-amber-50 text-amber-700 border-amber-200',
             EN_PROCESO: 'bg-blue-50 text-blue-700 border-blue-200',
@@ -36,7 +53,7 @@ const TicketDetailsModal = ({ ticket, isOpen, onClose }) => {
         return styles[status] || styles.PENDIENTE;
     };
 
-    const getStatusText = (status) => {
+    const getStatusText = (status: Ticket['status']) => {
         const text = {
             PENDIENTE: 'Pendiente',
             EN_PROCESO: 'En Proceso',
@@ -46,7 +63,6 @@ const TicketDetailsModal = ({ ticket, isOpen, onClose }) => {
         return text[status] || 'Pendiente';
     };
 
-    // Verificar si hay fecha de última actualización
     const hasStatusUpdate = ticket.updatedAt && ticket.updatedAt !== ticket.createdAt;
 
     return (
@@ -68,6 +84,12 @@ const TicketDetailsModal = ({ ticket, isOpen, onClose }) => {
                                     <Clock className="h-4 w-4" />
                                     Creado: {formatDate(ticket.createdAt)}
                                 </p>
+                                {hasStatusUpdate && (
+                                    <p className="text-sm text-gray-500 flex items-center gap-2">
+                                        <RotateCcw className="h-4 w-4" />
+                                        Actualizado: {formatDate(ticket.updatedAt)}
+                                    </p>
+                                )}
                             </div>
                         </div>
                         <button
@@ -81,20 +103,12 @@ const TicketDetailsModal = ({ ticket, isOpen, onClose }) => {
 
                 {/* Content */}
                 <div className="p-6 space-y-8">
-                    {/* Status Badge and Last Update */}
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-gray-600">Estado actual</span>
-                            <span className={`px-4 py-1.5 text-sm font-medium rounded-full border ${getStatusStyles(ticket.status)}`}>
-                                {getStatusText(ticket.status)}
-                            </span>
-                        </div>
-                        {hasStatusUpdate && (
-                            <p className="text-sm text-gray-500 flex items-center gap-2 justify-end">
-                                <RotateCcw className="h-4 w-4" />
-                                Último cambio de estado: {formatDate(ticket.updatedAt)}
-                            </p>
-                        )}
+                    {/* Status Badge */}
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-600">Estado actual</span>
+                        <span className={`px-4 py-1.5 text-sm font-medium rounded-full border ${getStatusStyles(ticket.status)}`}>
+                            {getStatusText(ticket.status)}
+                        </span>
                     </div>
 
                     {/* Info Grid */}
@@ -103,22 +117,16 @@ const TicketDetailsModal = ({ ticket, isOpen, onClose }) => {
                             <div>
                                 <h4 className="text-sm font-medium text-gray-600 flex items-center gap-2 mb-3">
                                     <User className="h-4 w-4" />
-                                    Información del Solicitante
+                                    Información del Ticket
                                 </h4>
                                 <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
                                     <div>
-                                        <p className="text-sm text-gray-600">Nombre completo</p>
-                                        <p className="text-sm font-medium text-gray-900">{ticket.requester}</p>
-                                    </div>
-                                    {ticket.user && (
-                                        <div>
-                                            <p className="text-sm text-gray-600">ID de Usuario</p>
-                                            <p className="text-sm font-medium text-gray-900">{ticket.userId}</p>
-                                        </div>
-                                    )}
-                                    <div>
                                         <p className="text-sm text-gray-600">Área</p>
                                         <p className="text-sm font-medium text-gray-900">{ticket.area}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-600">Servicio</p>
+                                        <p className="text-sm font-medium text-gray-900">{ticket.service}</p>
                                     </div>
                                 </div>
                             </div>
@@ -128,16 +136,14 @@ const TicketDetailsModal = ({ ticket, isOpen, onClose }) => {
                             <div>
                                 <h4 className="text-sm font-medium text-gray-600 flex items-center gap-2 mb-3">
                                     <Briefcase className="h-4 w-4" />
-                                    Información del Ticket
+                                    Información Adicional
                                 </h4>
                                 <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
                                     <div>
-                                        <p className="text-sm text-gray-600">ID del Ticket</p>
-                                        <p className="text-sm font-medium text-gray-900">{ticket.id}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-600">Servicio</p>
-                                        <p className="text-sm font-medium text-gray-900">{ticket.service}</p>
+                                        <p className="text-sm text-gray-600">Fecha de Creación</p>
+                                        <p className="text-sm font-medium text-gray-900">
+                                            {formatDate(ticket.createdAt)}
+                                        </p>
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-600">Días Transcurridos</p>
@@ -178,4 +184,4 @@ const TicketDetailsModal = ({ ticket, isOpen, onClose }) => {
     );
 };
 
-export default TicketDetailsModal;
+export default UserTicketDetailsModal;
