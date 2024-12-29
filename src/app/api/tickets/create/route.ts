@@ -3,11 +3,25 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 
+/**
+ * Este archivo define una ruta API en Next.js para crear nuevos tickets.
+ *
+ * La ruta maneja solicitudes POST, verifica la autenticación del usuario,
+ * valida los datos de entrada y guarda el nuevo ticket en la base de datos.
+ *
+ * Funcionalidad:
+ * - Verifica si el usuario está autenticado utilizando `next-auth`.
+ * - Extrae y valida los datos del cuerpo de la solicitud.
+ * - Obtiene la información del usuario autenticado desde la base de datos.
+ * - Crea un nuevo ticket en la base de datos con los datos proporcionados.
+ * - Maneja adecuadamente los errores y devuelve respuestas HTTP apropiadas.
+ */
+
 export async function POST(request: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
 
-        if (!session?.user) {
+        if (!session?.user) {// Si no hay usuario autenticado,  retornar error
             return NextResponse.json(
                 { error: 'Usuario no autenticado' },
                 { status: 401 }
