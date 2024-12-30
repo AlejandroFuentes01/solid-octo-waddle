@@ -365,14 +365,14 @@ export default function AdminDashboard() {
                                                             className="flex items-center space-x-2 text-blue-600 hover:text-blue-900 px-3 py-1 rounded-md hover:bg-blue-50 transition-all"
                                                         >
                                                             <Eye className="h-5 w-5" />
-                                                            <span>Ver Detalles</span>
+                                                            <span className="hidden lg:inline">Ver Detalles</span> {/* Solo visible en grandes resoluciones */}
                                                         </button>
                                                         <button
                                                             onClick={() => handleStatusChange(ticket.folio)}
                                                             className="flex items-center space-x-2 text-green-600 hover:text-green-900 px-3 py-1 rounded-md hover:bg-green-50 transition-all"
                                                         >
                                                             <RefreshCw className="h-5 w-5" />
-                                                            <span>Cambiar Estado</span>
+                                                            <span className="hidden lg:inline">Cambiar Estado</span> {/* Solo visible en grandes resoluciones */}
                                                         </button>
                                                     </div>
                                                 </td>
