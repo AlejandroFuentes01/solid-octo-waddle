@@ -30,7 +30,7 @@ const sendStatusChangeEmail = async ({
 
     try {
         await resend.emails.send({
-            from: 'Sistema de Tickets <tickets@tudominio.com>',
+            from: 'Sistema de Tickets <ticketstelematica@resend.dev>',
             to: userEmail,
             subject: `Actualización del estado de tu ticket ${ticketFolio}`,
             html: `
