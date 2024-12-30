@@ -6,7 +6,7 @@ import HeaderAdmin from "@/components/HeaderAdmin";
 import SearchBar from "@/components/SearchBar";
 import StatusFilter from "@/components/StatusFilter";
 import TicketDetailsModal from "@/components/TicketDetailsModal";
-import { Eye, RefreshCw } from "lucide-react";
+import { Eye, RefreshCw, X } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -20,6 +20,13 @@ interface Ticket {
     requester: string;
     description?: string;
     diasTranscurridos: number;
+}
+
+interface StatusChangeModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onStatusChange: (status: string) => void;
+    currentStatus: string;
 }
 
 const StatusBadge = ({ status }: { status: Ticket['status'] }) => {
@@ -44,7 +51,82 @@ const StatusBadge = ({ status }: { status: Ticket['status'] }) => {
     );
 };
 
-// Nuevo componente para la vista de tarjeta en móvil
+const StatusChangeModal = ({ isOpen, onClose, onStatusChange, currentStatus }: StatusChangeModalProps) => {
+    useEffect(() => {
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === "Escape") onClose();
+        };
+
+        if (isOpen) {
+            document.addEventListener("keydown", handleEscape);
+            document.body.style.overflow = "hidden";
+        }
+
+        return () => {
+            document.removeEventListener("keydown", handleEscape);
+            document.body.style.overflow = "unset";
+        };
+    }, [isOpen, onClose]);
+
+    if (!isOpen) return null;
+
+    const statusOptions = [
+        { value: "PENDIENTE", label: "Pendiente" },
+        { value: "EN_PROCESO", label: "En Proceso" },
+        { value: "RESUELTO", label: "Resuelto" },
+        { value: "CANCELADO", label: "Cancelado" },
+    ];
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+            <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+                <div className="flex items-center justify-between p-4 border-b">
+                    <h2 className="text-lg font-semibold text-gray-900">Cambiar Estado del Ticket</h2>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-500 transition-colors">
+                        <X className="h-5 w-5" />
+                    </button>
+                </div>
+
+                <div className="p-4 space-y-4">
+                    <p className="text-sm text-gray-500">
+                        Estado actual: <span className="font-medium">{currentStatus}</span>
+                    </p>
+
+                    <div className="grid grid-cols-1 gap-3">
+                        {statusOptions.map((option) => (
+                            <button
+                                key={option.value}
+                                onClick={() => {
+                                    onStatusChange(option.value);
+                                    onClose();
+                                }}
+                                disabled={option.value === currentStatus}
+                                className={`p-3 text-sm font-medium rounded-lg transition-all
+                                    ${option.value === currentStatus
+                                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                        : "bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 hover:border-gray-300"
+                                    }`}
+                            >
+                                {option.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="p-4 border-t bg-gray-50 rounded-b-lg">
+                    <button
+                        onClick={onClose}
+                        className="w-full px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 hover:text-red-700 hover:border-red-300 transition-colors"
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const TicketCard = ({ ticket, onStatusChange, onViewDetails }: {
     ticket: Ticket;
     onStatusChange: (folio: string) => void;
@@ -106,8 +188,10 @@ export default function AdminDashboard() {
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("todos");
-    const [selectedTicket, setSelectedTicket] = useState(null);
+    const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+    const [selectedTicketForStatus, setSelectedTicketForStatus] = useState<Ticket | null>(null);
 
     const fetchTickets = async () => {
         try {
@@ -131,25 +215,26 @@ export default function AdminDashboard() {
         fetchTickets();
     }, []);
 
-    const handleStatusChange = async (folio: string) => {
+    const handleStatusChange = (folio: string) => {
+        const ticket = tickets.find(t => t.folio === folio);
+        if (ticket) {
+            setSelectedTicketForStatus(ticket);
+            setIsStatusModalOpen(true);
+        }
+    };
+
+    const handleStatusUpdate = async (newStatus: string) => {
+        if (!selectedTicketForStatus) return;
+
         try {
-            const newStatus = prompt('Ingrese el nuevo estado (PENDIENTE, EN_PROCESO, RESUELTO, CANCELADO):');
-            if (!newStatus) return;
-
-            const validStatus = ['PENDIENTE', 'EN_PROCESO', 'RESUELTO', 'CANCELADO'];
-            if (!validStatus.includes(newStatus.toUpperCase())) {
-                alert('Estado no válido');
-                return;
-            }
-
             const response = await fetch('/api/admin/tickets', {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    folio,
-                    status: newStatus.toUpperCase(),
+                    folio: selectedTicketForStatus.folio,
+                    status: newStatus,
                 }),
             });
 
@@ -158,6 +243,8 @@ export default function AdminDashboard() {
             }
 
             await fetchTickets();
+            setIsStatusModalOpen(false);
+            setSelectedTicketForStatus(null);
         } catch (err) {
             alert('Error al actualizar el estado del ticket');
         }
@@ -223,7 +310,7 @@ export default function AdminDashboard() {
                     </div>
                 </Card>
 
-                {/* Vista móvil (cards) */}
+                {/* Mobile View */}
                 <div className="md:hidden">
                     {filteredTickets.length > 0 ? (
                         <div className="space-y-4">
@@ -243,77 +330,49 @@ export default function AdminDashboard() {
                     )}
                 </div>
 
-                {/* Vista desktop (tabla) */}
+                {/* Desktop View */}
                 <div className="hidden md:block">
                     <Card>
                         <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
                                     <tr>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Folio
-                                        </th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Área
-                                        </th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Servicio
-                                        </th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Estado
-                                        </th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Fecha
-                                        </th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Solicitante
-                                        </th>
-                                        <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Días
-                                        </th>
-                                        <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Acciones
-                                        </th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Folio</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Área</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Servicio</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Solicitante</th>
+                                        <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Días</th>
+                                        <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
                                     {filteredTickets.length > 0 ? (
                                         filteredTickets.map((ticket) => (
                                             <tr key={ticket.id} className="hover:bg-gray-50">
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    {ticket.folio}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {ticket.area}
-                                                </td>
-                                                <td className="px-6 py-4 text-sm text-gray-500">
-                                                    {ticket.service}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <StatusBadge status={ticket.status} />
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {new Date(ticket.createdAt).toLocaleDateString()}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {ticket.requester}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                                                    {ticket.diasTranscurridos}
-                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{ticket.folio}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ticket.area}</td>
+                                                <td className="px-6 py-4 text-sm text-gray-500">{ticket.service}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={ticket.status} /></td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(ticket.createdAt).toLocaleDateString()}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ticket.requester}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">{ticket.diasTranscurridos}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                     <div className="flex justify-end space-x-4">
                                                         <button
                                                             onClick={() => handleViewDetails(ticket.folio)}
-                                                            className="text-blue-600 hover:text-blue-900"
+                                                            className="flex items-center space-x-2 text-blue-600 hover:text-blue-900 px-3 py-1 rounded-md hover:bg-blue-50 transition-all"
                                                         >
                                                             <Eye className="h-5 w-5" />
+                                                            <span>Ver Detalles</span>
                                                         </button>
                                                         <button
                                                             onClick={() => handleStatusChange(ticket.folio)}
-                                                            className="text-green-600 hover:text-green-900"
+                                                            className="flex items-center space-x-2 text-green-600 hover:text-green-900 px-3 py-1 rounded-md hover:bg-green-50 transition-all"
                                                         >
                                                             <RefreshCw className="h-5 w-5" />
+                                                            <span>Cambiar Estado</span>
                                                         </button>
                                                     </div>
                                                 </td>
@@ -342,6 +401,16 @@ export default function AdminDashboard() {
                     setIsModalOpen(false);
                     setSelectedTicket(null);
                 }}
+            />
+
+            <StatusChangeModal
+                isOpen={isStatusModalOpen}
+                onClose={() => {
+                    setIsStatusModalOpen(false);
+                    setSelectedTicketForStatus(null);
+                }}
+                onStatusChange={handleStatusUpdate}
+                currentStatus={selectedTicketForStatus?.status || ''}
             />
         </div>
     );
