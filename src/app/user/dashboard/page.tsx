@@ -3,6 +3,7 @@
 import Card from "@/components/Card";
 import Footer from "@/components/Footer";
 import HeaderUser from "@/components/HeaderUser";
+import { PaginationControls } from "@/components/PaginationControls";
 import SearchBar from "@/components/SearchBar";
 import StatusFilter from "@/components/StatusFilter";
 import UserTicketDetailsModal from "@/components/UserTicketDetailsModal";
@@ -47,7 +48,7 @@ const StatusBadge = ({ status }: { status: Ticket['status'] }) => {
     );
 };
 
-const TicketCard = ({ ticket, onViewDetails }: { 
+const TicketCard = ({ ticket, onViewDetails }: {
     ticket: Ticket;
     onViewDetails: (folio: string) => void;
 }) => (
@@ -95,6 +96,8 @@ export default function UserTickets() {
     const [loading, setLoading] = useState(true);
     const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 6;
 
     useEffect(() => {
         const fetchTickets = async () => {
@@ -133,6 +136,16 @@ export default function UserTickets() {
 
         return matchesSearch && matchesStatus;
     });
+
+    const totalPages = Math.ceil(filteredTickets.length / ITEMS_PER_PAGE);
+    const paginatedTickets = filteredTickets.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, statusFilter]);
 
     if (loading) {
         return (
@@ -178,8 +191,8 @@ export default function UserTickets() {
 
                 {/* Vista Móvil */}
                 <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {filteredTickets.length > 0 ? (
-                        filteredTickets.map((ticket) => (
+                    {paginatedTickets.length > 0 ? (
+                        paginatedTickets.map((ticket) => (
                             <TicketCard
                                 key={ticket.id}
                                 ticket={ticket}
@@ -210,8 +223,8 @@ export default function UserTickets() {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {filteredTickets.length > 0 ? (
-                                        filteredTickets.map((ticket) => (
+                                    {paginatedTickets.length > 0 ? (
+                                        paginatedTickets.map((ticket) => (
                                             <tr key={ticket.id} className="hover:bg-gray-50 transition-colors">
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{ticket.folio}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ticket.area}</td>
@@ -242,6 +255,14 @@ export default function UserTickets() {
                         </div>
                     </Card>
                 </div>
+
+                {filteredTickets.length > ITEMS_PER_PAGE && (
+                    <PaginationControls
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                    />
+                )}
             </main>
 
             <Footer />
