@@ -4,6 +4,7 @@ import DeleteConfirmationDialog from "@/components/DeteleConfirmationDialog";
 import Footer from "@/components/Footer";
 import HeaderAdmin from "@/components/HeaderAdmin";
 import PasswordChangeDialog from '@/components/PasswordChangeDialog';
+import Toast from "@/components/Toast";
 import { Building, Calendar, Mail, Pencil, Search, Trash2, UserCog } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -17,6 +18,12 @@ type User = {
     createdAt: string;
 };
 
+type ToastState = {
+    show: boolean;
+    message: string;
+    type: "success" | "error";
+};
+
 export default function ManageUsersPage() {
     const [users, setUsers] = useState<User[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
@@ -26,6 +33,11 @@ export default function ManageUsersPage() {
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [userToDelete, setUserToDelete] = useState<number | null>(null);
+    const [toast, setToast] = useState<ToastState>({
+        show: false,
+        message: "",
+        type: "success"
+    });
 
 
     const fetchUsers = async (search: string = "") => {
@@ -104,9 +116,21 @@ export default function ManageUsersPage() {
             }
 
             setUsers(users.filter(user => user.id !== userToDelete));
+            setToast({
+                show: true,
+                message: "Usuario eliminado correctamente",
+                type: "success"
+            });
         } catch (error) {
             console.error('Error:', error);
-            alert('Error al eliminar el usuario');
+            setToast({
+                show: true,
+                message: "Error al eliminar el usuario",
+                type: "error"
+            });
+        } finally {
+            setIsDeleteDialogOpen(false);
+            setUserToDelete(null);
         }
     };
 
@@ -297,7 +321,13 @@ export default function ManageUsersPage() {
                 onClose={() => setIsDeleteDialogOpen(false)}
                 onConfirm={handleConfirmDelete}
             />
-
+            {toast.show && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast({ ...toast, show: false })}
+                />
+            )}
         </div>
     );
 }
