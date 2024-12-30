@@ -77,7 +77,7 @@ export default function StatusChangeModal({
                                 className={`p-3 text-sm font-medium rounded-lg transition-all
                     ${option.value === currentStatus
                                         ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                        : "bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 hover:border-gray-300"
+                                        : "bg-white hover:bg-blue-50 text-gray-900 border border-gray-200 hover:border-gray-300"
                                     }
                 `}
                             >
