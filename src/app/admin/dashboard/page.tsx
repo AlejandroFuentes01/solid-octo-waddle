@@ -45,7 +45,7 @@ const StatusBadge = ({ status }: { status: Ticket['status'] }) => {
     };
 
     return (
-        <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusStyles[status]} transition-all duration-200 hover:shadow-sm`}>
+        <span className={`px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${statusStyles[status]} transition-all duration-200 hover:shadow-sm`}>
             {statusDisplay[status]}
         </span>
     );
@@ -117,7 +117,7 @@ const StatusChangeModal = ({ isOpen, onClose, onStatusChange, currentStatus }: S
                 <div className="p-4 border-t bg-gray-50 rounded-b-lg">
                     <button
                         onClick={onClose}
-                        className="w-full px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 hover:text-red-700 hover:border-red-300 transition-colors"
+                        className="w-full px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                     >
                         Cancelar
                     </button>
@@ -132,7 +132,7 @@ const TicketCard = ({ ticket, onStatusChange, onViewDetails }: {
     onStatusChange: (folio: string) => void;
     onViewDetails: (folio: string) => void;
 }) => (
-    <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 transition-all duration-200 hover:shadow-md">
         <div className="flex justify-between items-start mb-3">
             <div>
                 <p className="text-sm font-semibold text-gray-900">{ticket.folio}</p>
@@ -141,23 +141,23 @@ const TicketCard = ({ ticket, onStatusChange, onViewDetails }: {
             <StatusBadge status={ticket.status} />
         </div>
 
-        <div className="space-y-2 mb-3">
+        <div className="space-y-2 mb-4">
             <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Servicio:</span>
+                <span className="text-xs font-medium text-gray-500">Servicio:</span>
                 <span className="text-xs text-gray-900">{ticket.service}</span>
             </div>
             <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Solicitante:</span>
+                <span className="text-xs font-medium text-gray-500">Solicitante:</span>
                 <span className="text-xs text-gray-900">{ticket.requester}</span>
             </div>
             <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Fecha:</span>
+                <span className="text-xs font-medium text-gray-500">Fecha:</span>
                 <span className="text-xs text-gray-900">
                     {new Date(ticket.createdAt).toLocaleDateString()}
                 </span>
             </div>
             <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Días transcurridos:</span>
+                <span className="text-xs font-medium text-gray-500">Días:</span>
                 <span className="text-xs text-gray-900">{ticket.diasTranscurridos}</span>
             </div>
         </div>
@@ -165,16 +165,16 @@ const TicketCard = ({ ticket, onStatusChange, onViewDetails }: {
         <div className="flex space-x-2">
             <button
                 onClick={() => onViewDetails(ticket.folio)}
-                className="flex-1 flex items-center justify-center space-x-2 text-sm text-blue-600 hover:text-blue-800 py-2 border border-blue-100 rounded-md transition-all hover:bg-blue-50"
+                className="flex-1 flex items-center justify-center space-x-1.5 text-xs font-medium text-blue-600 hover:text-blue-800 py-2 px-3 border border-blue-100 rounded-md transition-all hover:bg-blue-50"
             >
-                <Eye className="h-4 w-4" />
+                <Eye className="h-3.5 w-3.5" />
                 <span>Ver Detalles</span>
             </button>
             <button
                 onClick={() => onStatusChange(ticket.folio)}
-                className="flex-1 flex items-center justify-center space-x-2 text-sm text-green-600 hover:text-green-800 py-2 border border-green-100 rounded-md transition-all hover:bg-green-50"
+                className="flex-1 flex items-center justify-center space-x-1.5 text-xs font-medium text-green-600 hover:text-green-800 py-2 px-3 border border-green-100 rounded-md transition-all hover:bg-green-50"
             >
-                <RefreshCw className="h-4 w-4" />
+                <RefreshCw className="h-3.5 w-3.5" />
                 <span>Cambiar Estado</span>
             </button>
         </div>
@@ -273,32 +273,32 @@ export default function AdminDashboard() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+            <div className="flex items-center justify-center min-h-screen bg-gray-50">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="min-h-screen flex flex-col bg-gray-50">
             <HeaderAdmin />
 
-            <main className="flex-grow container mx-auto py-8 px-4 sm:px-6 lg:px-8">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Panel de Control</h1>
-                    <p className="text-gray-600 mt-2">Gestión de tickets de soporte técnico</p>
+            <main className="flex-grow container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <div className="mb-6">
+                    <h1 className="text-2xl font-bold text-gray-900">Panel de Control</h1>
+                    <p className="text-sm text-gray-600 mt-1">Gestión de tickets de soporte técnico</p>
                 </div>
 
                 {error && (
                     <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                        <p className="text-red-700">{error}</p>
+                        <p className="text-sm text-red-700">{error}</p>
                     </div>
                 )}
 
                 <Card className="mb-6">
-                    <div className="p-6">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 md:space-x-4">
-                            <div className="w-full md:w-96">
+                    <div className="p-4 sm:p-6">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                            <div className="w-full sm:w-96">
                                 <SearchBar
                                     value={searchTerm}
                                     onChange={setSearchTerm}
@@ -310,33 +310,31 @@ export default function AdminDashboard() {
                     </div>
                 </Card>
 
-                {/* Mobile View */}
-                <div className="md:hidden">
+                {/* Vista Móvil */}
+                <div className="lg:hidden grid gap-4 sm:grid-cols-2">
                     {filteredTickets.length > 0 ? (
-                        <div className="space-y-4">
-                            {filteredTickets.map((ticket) => (
-                                <TicketCard
-                                    key={ticket.id}
-                                    ticket={ticket}
-                                    onStatusChange={handleStatusChange}
-                                    onViewDetails={handleViewDetails}
-                                />
-                            ))}
-                        </div>
+                        filteredTickets.map((ticket) => (
+                            <TicketCard
+                                key={ticket.id}
+                                ticket={ticket}
+                                onStatusChange={handleStatusChange}
+                                onViewDetails={handleViewDetails}
+                            />
+                        ))
                     ) : (
-                        <div className="text-center py-4 text-gray-500">
+                        <div className="col-span-full text-center py-8 text-gray-500 bg-white rounded-lg border border-gray-200">
                             No se encontraron tickets
                         </div>
                     )}
                 </div>
 
-                {/* Desktop View */}
-                <div className="hidden md:block">
+                {/* Vista Desktop */}
+                <div className="hidden lg:block">
                     <Card>
                         <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
+                                <thead>
+                                    <tr className="bg-gray-50">
                                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Folio</th>
                                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Área</th>
                                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Servicio</th>
@@ -350,29 +348,29 @@ export default function AdminDashboard() {
                                 <tbody className="bg-white divide-y divide-gray-200">
                                     {filteredTickets.length > 0 ? (
                                         filteredTickets.map((ticket) => (
-                                            <tr key={ticket.id} className="hover:bg-gray-50">
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{ticket.folio}</td>
+                                            <tr key={ticket.id} className="hover:bg-gray-50 transition-colors">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{ticket.folio}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ticket.area}</td>
-                                                <td className="px-6 py-4 text-sm text-gray-500">{ticket.service}</td>
+                                                <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">{ticket.service}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={ticket.status} /></td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(ticket.createdAt).toLocaleDateString()}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ticket.requester}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">{ticket.diasTranscurridos}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                    <div className="flex justify-end space-x-4">
+                                                    <div className="flex justify-end space-x-2">
                                                         <button
                                                             onClick={() => handleViewDetails(ticket.folio)}
-                                                            className="flex items-center space-x-2 text-blue-600 hover:text-blue-900 px-3 py-1 rounded-md hover:bg-blue-50 transition-all"
+                                                            className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-blue-700 hover:text-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                                                         >
-                                                            <Eye className="h-5 w-5" />
-                                                            <span className="hidden lg:inline">Ver Detalles</span> {/* Solo visible en grandes resoluciones */}
+                                                            <Eye className="h-4 w-4" />
+                                                            <span className="ml-1.5">Ver</span>
                                                         </button>
                                                         <button
                                                             onClick={() => handleStatusChange(ticket.folio)}
-                                                            className="flex items-center space-x-2 text-green-600 hover:text-green-900 px-3 py-1 rounded-md hover:bg-green-50 transition-all"
+                                                            className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-green-700 hover:text-green-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                                                         >
-                                                            <RefreshCw className="h-5 w-5" />
-                                                            <span className="hidden lg:inline">Cambiar Estatus</span> {/* Solo visible en grandes resoluciones */}
+                                                            <RefreshCw className="h-4 w-4" />
+                                                            <span className="ml-1.5">Estado</span>
                                                         </button>
                                                     </div>
                                                 </td>
@@ -380,7 +378,7 @@ export default function AdminDashboard() {
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
+                                            <td colSpan={8} className="px-6 py-8 text-center text-sm text-gray-500 bg-white">
                                                 No se encontraron tickets
                                             </td>
                                         </tr>
