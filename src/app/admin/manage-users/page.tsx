@@ -1,5 +1,6 @@
 "use client";
 
+import DeleteConfirmationDialog from "@/components/DeteleConfirmationDialog";
 import Footer from "@/components/Footer";
 import HeaderAdmin from "@/components/HeaderAdmin";
 import PasswordChangeDialog from '@/components/PasswordChangeDialog';
@@ -23,6 +24,9 @@ export default function ManageUsersPage() {
     const [error, setError] = useState<string | null>(null);
     const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [userToDelete, setUserToDelete] = useState<number | null>(null);
+
 
     const fetchUsers = async (search: string = "") => {
         try {
@@ -33,12 +37,12 @@ export default function ManageUsersPage() {
                     'Cache-Control': 'no-cache'
                 }
             });
-            
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'Error al cargar los usuarios');
             }
-            
+
             const data = await response.json();
             setUsers(data);
         } catch (err) {
@@ -81,22 +85,28 @@ export default function ManageUsersPage() {
         }
     };
 
-    const handleDelete = async (userId: number) => {
-        if (window.confirm("¿Estás seguro de que deseas eliminar este usuario?")) {
-            try {
-                const response = await fetch(`/api/manage-users/${userId}`, {
-                    method: 'DELETE',
-                });
+    // Eliminar usuario
+    const handleDelete = (userId: number) => {
+        setUserToDelete(userId);
+        setIsDeleteDialogOpen(true);
+    };
 
-                if (!response.ok) {
-                    throw new Error('Error al eliminar el usuario');
-                }
+    const handleConfirmDelete = async () => {
+        if (!userToDelete) return;
 
-                setUsers(users.filter(user => user.id !== userId));
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Error al eliminar el usuario');
+        try {
+            const response = await fetch(`/api/manage-users/${userToDelete}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al eliminar el usuario');
             }
+
+            setUsers(users.filter(user => user.id !== userToDelete));
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error al eliminar el usuario');
         }
     };
 
@@ -282,6 +292,12 @@ export default function ManageUsersPage() {
                     username={selectedUser.username}
                 />
             )}
+            <DeleteConfirmationDialog
+                isOpen={isDeleteDialogOpen}
+                onClose={() => setIsDeleteDialogOpen(false)}
+                onConfirm={handleConfirmDelete}
+            />
+
         </div>
     );
 }
