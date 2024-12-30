@@ -3,19 +3,59 @@ import { prisma } from '@/lib/prisma';
 import { TicketStatus } from '@prisma/client';
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
+import { Resend } from 'resend';
 
-/**
- * Este archivo define una ruta API en Next.js para que los administradores gestionen tickets.
- *
- * La ruta maneja solicitudes GET, PATCH y DELETE, verifica la autenticación del usuario,
- * valida que el usuario tenga permisos de administrador y gestiona los tickets en la base de datos.
- *
- * Funcionalidad:
- * - Verifica si el usuario está autenticado utilizando `next-auth`.
- * - Verifica si el usuario tiene permisos de administrador.
- * - Obtiene, actualiza o elimina tickets según la operación.
- * - Maneja adecuadamente los errores y devuelve respuestas HTTP apropiadas.
- */
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Función para enviar correo de notificación
+const sendStatusChangeEmail = async ({
+    userEmail,
+    userName,
+    ticketFolio,
+    newStatus,
+    ticketService
+}: {
+    userEmail: string,
+    userName: string,
+    ticketFolio: string,
+    newStatus: string,
+    ticketService: string
+}) => {
+    const statusDisplay = {
+        PENDIENTE: "Pendiente",
+        EN_PROCESO: "En Proceso",
+        RESUELTO: "Resuelto",
+        CANCELADO: "Cancelado"
+    };
+
+    try {
+        await resend.emails.send({
+            from: 'Sistema de Tickets <tickets@tudominio.com>',
+            to: userEmail,
+            subject: `Actualización del estado de tu ticket ${ticketFolio}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #333;">Hola ${userName},</h2>
+                    
+                    <p>Te informamos que el estado de tu ticket ha sido actualizado:</p>
+                    
+                    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                        <p><strong>Folio:</strong> ${ticketFolio}</p>
+                        <p><strong>Servicio:</strong> ${ticketService}</p>
+                        <p><strong>Nuevo Estado:</strong> ${statusDisplay[newStatus]}</p>
+                    </div>
+                    
+                    <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
+                    
+                    <p style="color: #666; font-size: 14px;">Saludos,<br>Equipo de Soporte Técnico</p>
+                </div>
+            `,
+        });
+    } catch (error) {
+        console.error('Error sending email:', error);
+        throw new Error('Failed to send status update email');
+    }
+};
 
 // Función auxiliar para verificar permisos de administrador
 async function verifyAdminAccess(session) {
@@ -77,7 +117,7 @@ export async function GET(request: NextRequest) {
                 service: ticket.service,
                 status: ticket.status,
                 createdAt: ticket.createdAt.toISOString(),
-                updatedAt: ticket.updatedAt?.toISOString(), // Aseguramos que updatedAt se incluya
+                updatedAt: ticket.updatedAt?.toISOString(),
                 requester: ticket.requester,
                 description: ticket.description,
                 diasTranscurridos,
@@ -133,9 +173,18 @@ export async function PATCH(request: NextRequest) {
             );
         }
 
-        // Buscar el ticket primero para verificar que existe
+        // Buscar el ticket con la información del usuario
         const existingTicket = await prisma.ticket.findUnique({
-            where: { folio: folio }
+            where: { folio: folio },
+            include: {
+                user: {
+                    select: {
+                        fullName: true,
+                        email: true,
+                        area: true
+                    }
+                }
+            }
         });
 
         if (!existingTicket) {
@@ -145,12 +194,12 @@ export async function PATCH(request: NextRequest) {
             );
         }
 
-        // Actualizar el ticket con la nueva fecha de actualización
+        // Actualizar el ticket
         const updatedTicket = await prisma.ticket.update({
             where: { folio: folio },
             data: {
                 status: status as TicketStatus,
-                updatedAt: new Date() // Aseguramos que se actualice la fecha
+                updatedAt: new Date()
             },
             include: {
                 user: {
@@ -163,7 +212,23 @@ export async function PATCH(request: NextRequest) {
             }
         });
 
-        // Transformar la respuesta para mantener consistencia
+        // Enviar notificación por correo
+        if (updatedTicket.user?.email) {
+            try {
+                await sendStatusChangeEmail({
+                    userEmail: updatedTicket.user.email,
+                    userName: updatedTicket.user.fullName || 'Usuario',
+                    ticketFolio: updatedTicket.folio,
+                    newStatus: updatedTicket.status,
+                    ticketService: updatedTicket.service
+                });
+            } catch (emailError) {
+                console.error('Error al enviar correo de notificación:', emailError);
+                // No detenemos el flujo si falla el envío del correo
+            }
+        }
+
+        // Transformar la respuesta
         const transformedTicket = {
             id: updatedTicket.id,
             folio: updatedTicket.folio,
@@ -171,7 +236,7 @@ export async function PATCH(request: NextRequest) {
             service: updatedTicket.service,
             status: updatedTicket.status,
             createdAt: updatedTicket.createdAt.toISOString(),
-            updatedAt: updatedTicket.updatedAt.toISOString(), // Incluimos explícitamente updatedAt
+            updatedAt: updatedTicket.updatedAt.toISOString(),
             requester: updatedTicket.requester,
             description: updatedTicket.description,
             diasTranscurridos: Math.floor(
