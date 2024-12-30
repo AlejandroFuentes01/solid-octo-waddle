@@ -30,26 +30,82 @@ const sendStatusChangeEmail = async ({
 
     try {
         await resend.emails.send({
-            from: 'Sistema de Tickets <ticketstelematica@resend.dev>',
-            to: userEmail,
-            subject: `Actualización del estado de tu ticket ${ticketFolio}`,
-            html: `
-                <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #333;">Hola ${userName},</h2>
-                    
-                    <p>Te informamos que el estado de tu ticket ha sido actualizado:</p>
-                    
-                    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                        <p><strong>Folio:</strong> ${ticketFolio}</p>
-                        <p><strong>Servicio:</strong> ${ticketService}</p>
-                        <p><strong>Nuevo Estado:</strong> ${statusDisplay[newStatus]}</p>
+                from: 'Telemática<ticketstelematica@resend.dev>',
+                to: userEmail,
+                subject: `Actualización de Ticket de Soporte Técnico - ${ticketFolio}`,
+                html: `<!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="margin: 0; padding: 0; background-color: #f0f4f8; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 40px; border-radius: 12px; margin-top: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <!-- Header with Logo -->
+                    <div style="text-align: center; margin-bottom: 35px;">
+                        <img src="http://comala.gob.mx//storage/settings/logo2427.jpg" alt="Logo DGTI" style="max-width: 180px; height: auto;">
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #e2e8f0;">
+                            <h1 style="color: #1a365d; font-size: 22px; margin: 0;">Dirección General de Tecnologías de Información</h1>
+                            <p style="color: #2d3748; font-size: 16px; margin: 5px 0 0 0;">Departamento de Telemática</p>
+                        </div>
                     </div>
-                    
-                    <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
-                    
-                    <p style="color: #666; font-size: 14px;">Saludos,<br>Equipo de Soporte Técnico</p>
+            
+                    <!-- Main Content -->
+                    <div style="border-left: 5px solid #2563eb; padding-left: 25px; margin-bottom: 35px; background: linear-gradient(to right, #f8fafc, #ffffff);">
+                        <h2 style="color: #1e293b; font-size: 24px; margin: 0 0 15px 0;">Hola ${userName},</h2>
+                        <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0;">
+                            Te informamos que se ha actualizado el estado de tu solicitud de soporte técnico.
+                        </p>
+                    </div>
+            
+                    <!-- Ticket Details Card -->
+                    <div style="background: linear-gradient(145deg, #f8fafc, #f1f5f9); border: 1px solid #e2e8f0; border-radius: 10px; padding: 30px; margin: 30px 0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
+                        <div style="margin-bottom: 20px;">
+                            <p style="color: #64748b; font-size: 14px; font-weight: 600; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">Folio de Seguimiento</p>
+                            <p style="color: #0f172a; font-size: 18px; font-weight: 700; margin: 0; letter-spacing: 0.5px;">${ticketFolio}</p>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <p style="color: #64748b; font-size: 14px; font-weight: 600; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">Servicio Solicitado</p>
+                            <p style="color: #0f172a; font-size: 18px; font-weight: 700; margin: 0;">${ticketService}</p>
+                        </div>
+                        <div style="background-color: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                            <p style="color: #64748b; font-size: 14px; font-weight: 600; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">Estado Actual</p>
+                            <p style="display: inline-block; background-color: #dbeafe; color: #1e40af; font-size: 16px; font-weight: 600; padding: 8px 16px; border-radius: 8px; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">${statusDisplay[newStatus]}</p>
+                        </div>
+                    </div>
+            
+                    <!-- Contact Section -->
+                    <div style="margin-top: 35px; padding: 30px; background-color: #f8fafc; border-radius: 10px;">
+                        <h3 style="color: #1e293b; font-size: 18px; margin: 0 0 20px 0; text-align: center;">Información de Contacto</h3>
+                        <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 25px 0; text-align: center;">
+                            Para cualquier duda o aclaración sobre tu solicitud, puedes contactarnos a través de los siguientes medios:
+                        </p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+                            <div style="background-color: white; padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
+                                <p style="margin: 0 0 10px 0; color: #64748b; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Teléfono</p>
+                                <p style="margin: 0; color: #0f172a; font-size: 16px; font-weight: 600;">312 167 6789</p>
+                            </div>
+                            <div style="background-color: white; padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
+                                <p style="margin: 0 0 10px 0; color: #64748b; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Correo Electrónico</p>
+                                <p style="margin: 0; color: #0f172a; font-size: 16px; font-weight: 600;">telematica@comala.gob.mx</p>
+                            </div>
+                        </div>
+                        <div style="text-align: center;">
+                            <a href="mailto:telematica@comala.gob.mx" style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px; transition: background-color 0.3s ease; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);">Contactar Soporte</a>
+                        </div>
+                    </div>
+            
+                    <!-- Footer -->
+                    <div style="margin-top: 40px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
+                        <p style="color: #475569; font-size: 15px; margin: 0; font-weight: 500;">Atentamente,<br><strong>Departamento de Telemática</strong></p>
+                        <div style="margin-top: 25px;">
+                            <p style="color: #64748b; font-size: 12px; margin: 0;">H. Ayuntamiento de Comala © ${new Date().getFullYear()}</p>
+                            <p style="color: #94a3b8; font-size: 11px; margin: 8px 0 0 0;">Este es un correo automático, por favor no responder a este mensaje.</p>
+                        </div>
+                    </div>
                 </div>
-            `,
+            </body>
+            </html>`
         });
     } catch (error) {
         console.error('Error sending email:', error);
