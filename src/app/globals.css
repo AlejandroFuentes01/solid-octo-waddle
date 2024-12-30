@@ -53,3 +53,20 @@
     @apply bg-red-50 border border-red-200 text-red-500 px-4 py-2 rounded-lg text-center text-sm animate-pulse;
   }
 }
+
+::-webkit-scrollbar {
+  width: 15px;  /* Reduced from 16px to 8px */
+}
+::-webkit-scrollbar-track {
+  border-radius: 100vw;
+  margin-block: 5px;  /* Reduced from 10px to 5px */
+}
+::-webkit-scrollbar-thumb {
+  background: repeating-linear-gradient(
+    120deg,
+    red 0 7%,
+    white 8% 15%
+  );
+  border-radius: 100vw;
+  border: solid 1px hsl(120 5% 0% /1);  /* Reduced from 2px to 1px */
+}
