@@ -1,8 +1,10 @@
 "use client";
 
+import DeleteConfirmationDialog from "@/components/DeteleConfirmationDialog";
 import Footer from "@/components/Footer";
 import HeaderAdmin from "@/components/HeaderAdmin";
 import PasswordChangeDialog from '@/components/PasswordChangeDialog';
+import Toast from "@/components/Toast";
 import { Building, Calendar, Mail, Pencil, Search, Trash2, UserCog } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -16,6 +18,12 @@ type User = {
     createdAt: string;
 };
 
+type ToastState = {
+    show: boolean;
+    message: string;
+    type: "success" | "error";
+};
+
 export default function ManageUsersPage() {
     const [users, setUsers] = useState<User[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
@@ -23,6 +31,14 @@ export default function ManageUsersPage() {
     const [error, setError] = useState<string | null>(null);
     const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [userToDelete, setUserToDelete] = useState<number | null>(null);
+    const [toast, setToast] = useState<ToastState>({
+        show: false,
+        message: "",
+        type: "success"
+    });
+
 
     const fetchUsers = async (search: string = "") => {
         try {
@@ -33,12 +49,12 @@ export default function ManageUsersPage() {
                     'Cache-Control': 'no-cache'
                 }
             });
-            
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'Error al cargar los usuarios');
             }
-            
+
             const data = await response.json();
             setUsers(data);
         } catch (err) {
@@ -81,22 +97,40 @@ export default function ManageUsersPage() {
         }
     };
 
-    const handleDelete = async (userId: number) => {
-        if (window.confirm("¿Estás seguro de que deseas eliminar este usuario?")) {
-            try {
-                const response = await fetch(`/api/manage-users/${userId}`, {
-                    method: 'DELETE',
-                });
+    // Eliminar usuario
+    const handleDelete = (userId: number) => {
+        setUserToDelete(userId);
+        setIsDeleteDialogOpen(true);
+    };
 
-                if (!response.ok) {
-                    throw new Error('Error al eliminar el usuario');
-                }
+    const handleConfirmDelete = async () => {
+        if (!userToDelete) return;
 
-                setUsers(users.filter(user => user.id !== userId));
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Error al eliminar el usuario');
+        try {
+            const response = await fetch(`/api/manage-users/${userToDelete}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al eliminar el usuario');
             }
+
+            setUsers(users.filter(user => user.id !== userToDelete));
+            setToast({
+                show: true,
+                message: "Usuario eliminado correctamente",
+                type: "success"
+            });
+        } catch (error) {
+            console.error('Error:', error);
+            setToast({
+                show: true,
+                message: "Error al eliminar el usuario",
+                type: "error"
+            });
+        } finally {
+            setIsDeleteDialogOpen(false);
+            setUserToDelete(null);
         }
     };
 
@@ -280,6 +314,18 @@ export default function ManageUsersPage() {
                     }}
                     userId={selectedUser.id}
                     username={selectedUser.username}
+                />
+            )}
+            <DeleteConfirmationDialog
+                isOpen={isDeleteDialogOpen}
+                onClose={() => setIsDeleteDialogOpen(false)}
+                onConfirm={handleConfirmDelete}
+            />
+            {toast.show && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast({ ...toast, show: false })}
                 />
             )}
         </div>
