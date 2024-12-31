@@ -1,7 +1,8 @@
-// app/admin/dashboard/page.tsx
 "use client";
 
 import Card from "@/components/Card";
+import Footer from "@/components/Footer";
+import HeaderAdmin from "@/components/HeaderAdmin";
 import { PaginationControls } from "@/components/PaginationControls";
 import SearchBar from "@/components/SearchBar";
 import StatusFilter from "@/components/StatusFilter";
@@ -292,119 +293,125 @@ export default function AdminDashboard() {
     }
 
     return (
-        <>
-            <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">Panel de Control</h1>
-                <p className="text-sm text-gray-600 mt-1">Gestión de tickets de soporte técnico</p>
-            </div>
+        <div className="min-h-screen flex flex-col bg-gray-50">
+            <HeaderAdmin />
 
-            {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-sm text-red-700">{error}</p>
+            <main className="flex-grow container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <div className="mb-6">
+                    <h1 className="text-2xl font-bold text-gray-900">Panel de Control</h1>
+                    <p className="text-sm text-gray-600 mt-1">Gestión de tickets de soporte técnico</p>
                 </div>
-            )}
 
-            <Card className="mb-6">
-                <div className="p-4 sm:p-6">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                        <div className="w-full sm:w-96">
-                            <SearchBar
-                                value={searchTerm}
-                                onChange={setSearchTerm}
-                                placeholder="Buscar por folio, área o solicitante..."
-                            />
-                        </div>
-                        <StatusFilter value={statusFilter} onChange={setStatusFilter} />
-                    </div>
-                </div>
-            </Card>
-
-            {/* Vista Móvil */}
-            <div className="lg:hidden grid gap-4 sm:grid-cols-2">
-                {paginatedTickets.length > 0 ? (
-                    paginatedTickets.map((ticket) => (
-                        <TicketCard
-                            key={ticket.id}
-                            ticket={ticket}
-                            onStatusChange={handleStatusChange}
-                            onViewDetails={handleViewDetails}
-                        />
-                    ))
-                ) : (
-                    <div className="col-span-full text-center py-8 text-gray-500 bg-white rounded-lg border border-gray-200">
-                        No se encontraron tickets
+                {error && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="text-sm text-red-700">{error}</p>
                     </div>
                 )}
-            </div>
 
-            {/* Vista Desktop */}
-            <div className="hidden lg:block">
-                <Card>
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead>
-                                <tr className="bg-gray-50">
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Folio</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Área</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Servicio</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Solicitante</th>
-                                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Días</th>
-                                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {paginatedTickets.length > 0 ? (
-                                    paginatedTickets.map((ticket) => (
-                                        <tr key={ticket.id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{ticket.folio}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ticket.area}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">{ticket.service}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={ticket.status} /></td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(ticket.createdAt).toLocaleDateString()}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ticket.requester}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">{ticket.diasTranscurridos}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <div className="flex justify-end space-x-2">
-                                                    <button
-                                                        onClick={() => handleViewDetails(ticket.folio)}
-                                                        className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-blue-700 hover:text-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                                                    >
-                                                        <Eye className="h-4 w-4" />
-                                                        <span className="ml-1.5">Ver</span>
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleStatusChange(ticket.folio)}
-                                                        className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-green-700 hover:text-green-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                                                    >
-                                                        <RefreshCw className="h-4 w-4" />
-                                                        <span className="ml-1.5">Estado</span>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={8} className="px-6 py-8 text-center text-sm text-gray-500 bg-white">
-                                            No se encontraron tickets
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
+                <Card className="mb-6">
+                    <div className="p-4 sm:p-6">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                            <div className="w-full sm:w-96">
+                                <SearchBar
+                                    value={searchTerm}
+                                    onChange={setSearchTerm}
+                                    placeholder="Buscar por folio, área o solicitante..."
+                                />
+                            </div>
+                            <StatusFilter value={statusFilter} onChange={setStatusFilter} />
+                        </div>
                     </div>
                 </Card>
-            </div>
 
-            {filteredTickets.length > ITEMS_PER_PAGE && (
-                <PaginationControls
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                />
-            )}
+                {/* Vista Móvil */}
+                <div className="lg:hidden grid gap-4 sm:grid-cols-2">
+                    {paginatedTickets.length > 0 ? (
+                        paginatedTickets.map((ticket) => (
+                            <TicketCard
+                                key={ticket.id}
+                                ticket={ticket}
+                                onStatusChange={handleStatusChange}
+                                onViewDetails={handleViewDetails}
+                            />
+                        ))
+                    ) : (
+                        <div className="col-span-full text-center py-8 text-gray-500 bg-white rounded-lg border border-gray-200">
+                            No se encontraron tickets
+                        </div>
+                    )}
+                </div>
+
+                {/* Vista Desktop */}
+                <div className="hidden lg:block">
+                    <Card>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr className="bg-gray-50">
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Folio</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Área</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Servicio</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray -500 uppercase tracking-wider">Fecha</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Solicitante</th>
+                                        <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Días</th>
+                                        <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {paginatedTickets.length > 0 ? (
+                                        paginatedTickets.map((ticket) => (
+                                            <tr key={ticket.id} className="hover:bg-gray-50 transition-colors">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{ticket.folio}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ticket.area}</td>
+                                                <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">{ticket.service}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={ticket.status} /></td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(ticket.createdAt).toLocaleDateString()}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ticket.requester}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">{ticket.diasTranscurridos}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                    <div className="flex justify-end space-x-2">
+                                                        <button
+                                                            onClick={() => handleViewDetails(ticket.folio)}
+                                                            className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-blue-700 hover:text-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                                        >
+                                                            <Eye className="h-4 w-4" />
+                                                            <span className="ml-1.5">Ver</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleStatusChange(ticket.folio)}
+                                                            className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-green-700 hover:text-green-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                                        >
+                                                            <RefreshCw className="h-4 w-4" />
+                                                            <span className="ml-1.5">Estado</span>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={8} className="px-6 py-8 text-center text-sm text-gray-500 bg-white">
+                                                No se encontraron tickets
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </Card>
+                </div>
+
+                {filteredTickets.length > ITEMS_PER_PAGE && (
+                    <PaginationControls
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                    />
+                )}
+            </main>
+
+            <Footer />
 
             <TicketDetailsModal
                 ticket={selectedTicket}
@@ -424,6 +431,6 @@ export default function AdminDashboard() {
                 onStatusChange={handleStatusUpdate}
                 currentStatus={selectedTicketForStatus?.status || ''}
             />
-        </>
+        </div>
     );
 }
