@@ -13,8 +13,8 @@ export const metadata: Metadata = {
   title: "Asistencia Tickets",
   description: "Sistema para la gestión de tickets en el área de telemática.",
   icons: {
-    icon: '/favicon.ico', // 16x16 px
-    apple: '/apple-icon.png', // 180x180 px
+    icon: '/DComalaFlavicon.svg', // 16x16 px
+    apple: '/DComalaApple.png', // 180x180 px
   }
 }
 
