@@ -10,6 +10,7 @@
     "navidad": "npm run dev"
   },
   "dependencies": {
+    "@auth/prisma-adapter": "^2.7.4",
     "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.2.0",
     "@prisma/client": "^6.1.0",
