@@ -11,10 +11,7 @@ export async function protectRoute(allowedRoles: ("ADMIN" | "NORMAL")[]) {
     }
 
     if (!allowedRoles.includes(session.user.role)) {
-        const redirectPath = session.user.role === "ADMIN"
-            ? AUTH_ROUTES.ADMIN.DASHBOARD
-            : AUTH_ROUTES.USER.DASHBOARD;
-        redirect(redirectPath);
+        redirect("/forbidden");
     }
 
     return session.user;
