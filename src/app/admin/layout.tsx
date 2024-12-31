@@ -1,12 +1,12 @@
-// app/admin/layout.tsx
-import { protectAdminRoute } from "@/lib/auth/route-protection";
+// app/user/layout.tsx
+import { protectUserRoute } from "@/lib/auth/route-protection";
 
-export default async function AdminLayout({
+export default async function UserLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    await protectAdminRoute();
+    await protectUserRoute();
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-50">
