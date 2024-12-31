@@ -1,13 +1,18 @@
-// app/user/dashboard/page.tsx
+// app/user/layout.tsx
 import { protectUserRoute } from "@/lib/auth/route-protection";
 
-export default async function UserDashboard() {
-    const user = await protectUserRoute();
+export default async function UserLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
+    await protectUserRoute();
 
     return (
         <div>
-            <h1>Panel de Usuario</h1>
-            <p>Bienvenido, {user.name}</p>
+            <main>
+                {children}
+            </main>
         </div>
     );
 }

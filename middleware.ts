@@ -4,20 +4,32 @@ import { NextResponse } from "next/server";
 export default withAuth(
     function middleware(req) {
         const token = req.nextauth.token;
-
-        // Si el usuario está autenticado, redirigir según su rol
-        if (token) {
-            console.log("Token role:", token.role);
-            // Redirigir ADMIN a /admin/dashboard
-            if (token.role === "ADMIN") {
-                return NextResponse.redirect(new URL("/admin/dashboard", req.url));
-            }
-            // Redirigir usuarios normales a /user/dashboard
-            return NextResponse.redirect(new URL("/user/dashboard", req.url));
-        }
+        const path = req.nextUrl.pathname;
 
         // Si no hay token, redirigir al login
-        return NextResponse.redirect(new URL("/login", req.url));
+        if (!token) {
+            return NextResponse.redirect(new URL("/login", req.url));
+        }
+
+        // Protección de rutas de admin
+        if (path.startsWith("/admin") && token.role !== "ADMIN") {
+            return NextResponse.redirect(new URL("/forbidden", req.url));
+        }
+
+        // Protección de rutas de usuario normal
+        if (path.startsWith("/user") && token.role !== "NORMAL") {
+            return NextResponse.redirect(new URL("/forbidden", req.url));
+        }
+
+        // Redirección de la ruta /dashboard según el rol
+        if (path === "/dashboard") {
+            const dashboardUrl = token.role === "ADMIN"
+                ? "/admin/dashboard"
+                : "/user/dashboard";
+            return NextResponse.redirect(new URL(dashboardUrl, req.url));
+        }
+
+        return NextResponse.next();
     },
     {
         callbacks: {
@@ -29,7 +41,7 @@ export default withAuth(
 export const config = {
     matcher: [
         "/dashboard",
-        "/user/:path",
-        "/admin/:path"
+        "/user/:path*",
+        "/admin/:path*"
     ],
 };
