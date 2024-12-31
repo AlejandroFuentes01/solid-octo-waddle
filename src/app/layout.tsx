@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import "./globals.css"
 import Providers from ".././components/Providers"
+import "./globals.css"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -12,6 +12,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Asistencia Tickets",
   description: "Sistema para la gestión de tickets en el área de telemática.",
+  icons: {
+    icon: '/favicon.ico', // 16x16 px
+    apple: '/apple-icon.png', // 180x180 px
+  }
 }
 
 export default function RootLayout({
